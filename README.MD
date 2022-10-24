@@ -6,7 +6,7 @@
 
 Cat Config MC is an adaptation of my existing library [Cat Config](https://github.com/LGatodu47/CatConfig)
 for Minecraft mods and especially mods on fabric (as there is no integrated configuration like in Forge).
-You can use this library in your fabric projects by adding its artifacts located at `io.github.lgatodu47.meowrapper`
+You can use this library in your fabric projects by adding its artifacts located at `io.github.lgatodu47.catconfig-mc-${mc_version}`
 on `https://s01.oss.sonatype.org/content/repositories/releases`. Here is a code snipped of a `build.gradle`
 file that integrates the library:
 ```

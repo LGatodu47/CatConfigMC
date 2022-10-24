@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "catconfig-mc",
+  "name": "Cat Config MC",
+  "version": "${version}",
+  "description": "A bunch of helpful stuff in order to use the 'catconfig' library with Minecraft.",
+  "license": "MIT",
+  "authors": ["LGatodu47"],
+  "depends": {
+    "minecraft": ">=1.19"
+  },
+  "custom": {
+    "modmenu": {
+      "badges": ["library"]
+    }
+  }
+}

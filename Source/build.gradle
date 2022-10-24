@@ -1,0 +1,87 @@
+plugins {
+    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'maven-publish'
+    id 'idea'
+    id 'signing'
+}
+
+archivesBaseName = "${lib_name}-${minecraft_version}"
+version version
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings "net.fabricmc:yarn:${yarn_mappings}:v2"
+    configurations.implementation.dependencies.stream()
+            .filter(d -> d.group == "io.github.lgatodu47" && d.name == "catconfig")
+    .forEach(d -> include d)
+}
+
+loom {
+    mixin {
+        useLegacyMixinAp = false
+    }
+}
+
+processResources {
+    inputs.property "version", project.version
+
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+publishing {
+    publications {
+        catconfigmc(MavenPublication) {
+            groupId project.group
+            artifactId project.archivesBaseName
+            version project.version
+            from components.java
+
+            pom {
+                name = 'CatConfigMC'
+                description = 'Config File handling library for Minecraft Mods'
+                url = 'https://github.com/LGatodu47/CatConfigMC'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = "https://www.opensource.org/licenses/mit-license.php"
+                    }
+                }
+
+                scm {
+                    connection = "scm:git:https://github.com/LGatodu47/CatConfigMC.git"
+                    developerConnection = "scm:git:ssh://github.com/LGatodu47/CatConfigMC.git"
+                    url = "https://github.com/LGatodu47/CatConfigMC"
+                }
+
+                developers {
+                    developer {
+                        id = 'lgatodu47'
+                        name = 'LGatodu47'
+                        email = 'driph.v450@gmail.com'
+                    }
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "Local"
+            url layout.buildDirectory.dir("repo")
+        }
+        maven {
+            name = "OSSRH"
+            url = 'https://s01.oss.sonatype.org/service/local/staging/deploy/maven2'
+
+            credentials {
+                username System.getProperty("catconfigmc.publish.username")
+                password System.getProperty("catconfigmc.publish.password")
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.catconfigmc
+}

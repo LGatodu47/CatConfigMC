@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "testmod",
+  "version": "0",
+  "name": "TestMod",
+  "description": "TestMod",
+  "authors": [
+    "LGatodu47"
+  ],
+  "icon": "icon.png",
+  "contact": {},
+  "license": "None",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "io.github.lgatodu47.testmod.TestModClient"
+    ],
+    "main": [
+      "io.github.lgatodu47.testmod.TestMod"
+    ],
+    "modmenu": [
+      "io.github.lgatodu47.testmod.TestModModMenuApi"
+    ]
+  },
+  "mixins": [
+  ],
+  "depends": {
+    "minecraft": "1.19.2"
+  }
+}

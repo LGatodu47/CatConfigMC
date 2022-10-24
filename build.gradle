@@ -1,0 +1,21 @@
+subprojects {
+    apply plugin: 'java'
+
+    group 'io.github.lgatodu47'
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    java.withSourcesJar()
+    java.withJavadocJar()
+
+    repositories {
+        mavenCentral()
+        maven {
+            name 'OSSRH'
+            url 'https://s01.oss.sonatype.org/content/repositories/releases'
+        }
+    }
+
+    dependencies {
+        implementation 'io.github.lgatodu47:catconfig:0.2.3'
+    }
+}

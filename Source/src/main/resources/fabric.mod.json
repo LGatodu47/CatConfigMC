@@ -6,6 +6,7 @@
   "description": "A bunch of helpful stuff in order to use the 'catconfig' library with Minecraft.",
   "license": "MIT",
   "authors": ["LGatodu47"],
+  "icon": "icon.png",
   "depends": {
     "minecraft": ">=1.19"
   },

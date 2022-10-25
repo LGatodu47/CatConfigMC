@@ -11,13 +11,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * A screen that allows selection between multiple config screens depending on the side.
  */
-public class ConfigSideSelectionScreen extends Screen {
+public class ConfigSideSelectionScreen extends Screen implements ConfigListener {
     protected final Screen previous;
     protected final Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories;
     protected int entriesPerRow = 3;
@@ -61,7 +62,7 @@ public class ConfigSideSelectionScreen extends Screen {
 
         int rowIndex = 0;
         int columnIndex = 0;
-        for(Map.Entry<ConfigSide, ConfigScreenFactory> entry : screenFactories.entrySet()) {
+        for(Map.Entry<ConfigSide, ConfigScreenFactory> entry : screenFactories.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().sideName())).toList()) {
             // reached maximum amount of rows, break from loop
             if(columnIndex == rowAmount) {
                 break;
@@ -123,6 +124,15 @@ public class ConfigSideSelectionScreen extends Screen {
      */
     public static ConfigSideSelectionScreen.Builder create(Text title) {
         return new Builder(title);
+    }
+
+    @Override
+    public void configUpdated() {
+        if(isParentScreen()) {
+            if (previous instanceof ConfigListener listener) {
+                listener.configUpdated();
+            }
+        }
     }
 
     public static class Builder {

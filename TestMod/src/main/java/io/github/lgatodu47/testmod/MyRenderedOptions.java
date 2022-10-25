@@ -33,6 +33,7 @@ public class MyRenderedOptions {
         static {
 //            BUILDER.option(MyConfigOptions.USER_INFO_OPTION).setCommonTranslationKey("user_info").setWidgetFactory(Common::makeUserInfoWidget).build();
             BUILDER.ofBoolean(MyConfigOptions.COMMON_BOOL).setCommonTranslationKey("common_bool").build();
+            BUILDER.ofInt(MyConfigOptions.SMOL_INT).setCommonTranslationKey("smol_int").build();
         }
 
         private static ClickableWidget makeUserInfoWidget(ConfigAccess config) {

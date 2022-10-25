@@ -27,5 +27,6 @@ class MyConfigOptions {
         BUILDER.onSides(MinecraftConfigSides.COMMON);
     }
     public static final ConfigOption<Boolean> COMMON_BOOL = BUILDER.createBool("common_bool", true);
+    public static final ConfigOption<Integer> SMOL_INT = BUILDER.createInt("smol_int", 4, 2, 8);
     public static final ConfigOption<UserInfoTest> USER_INFO_OPTION = BUILDER.put(new UserInfoTest.Option("user_info_test", new UserInfoTest("MyName", UUID.fromString("ba47dd18-1869-4fa3-850a-df0ddf371202"), 34)));
 }

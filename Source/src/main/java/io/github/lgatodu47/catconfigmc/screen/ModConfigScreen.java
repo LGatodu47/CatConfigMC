@@ -3,7 +3,6 @@ package io.github.lgatodu47.catconfigmc.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
-import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
@@ -12,7 +11,6 @@ import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.function.Supplier;
@@ -42,11 +40,6 @@ public class ModConfigScreen extends Screen {
     }
 
     @Override
-    public List<? extends Element> children() {
-        return super.children();
-    }
-
-    @Override
     public void tick() {
         list.tick();
     }
@@ -58,7 +51,7 @@ public class ModConfigScreen extends Screen {
         final int btnWidth = 200;
 
         ConfigOptionListWidget<?> listWidget = new ConfigOptionListWidget<>(this.client, this.width, this.height - spacing * 5 - btnHeight, spacing * 3, this.height - spacing * 2 - btnHeight);
-        listWidget.addAll(config, renderedOptionsSupplier);
+        listWidget.addAll(this.config, this.renderedOptionsSupplier);
         this.list = listWidget;
         // We manually render the list because it needs to be rendered before the other children.
         this.addSelectableChild(listWidget);
@@ -75,7 +68,12 @@ public class ModConfigScreen extends Screen {
         list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> renderTooltip(matrices, desc, mouseX, mouseY));
     }
 
-    public void renderAboveList(int listBottom) {
+    /**
+     * Covers the screen from the list bottom position all the way up to the bottom of the screen.
+     * By doing this we hide the other list entries that are out of the render area.
+     * @param listBottom The bottom y position of the list.
+     */
+    protected void renderAboveList(int listBottom) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);

@@ -31,6 +31,8 @@ class MyCatConfig extends CatConfig {
 
     @Override
     protected @Nullable ConfigWatcher makeAndStartConfigWatcherThread() {
-        return new ConfigWatcher("TestMod Config Watcher");
+        ConfigWatcher watcher = new ConfigWatcher("TestMod Config Watcher");
+        watcher.start();
+        return watcher;
     }
 }

@@ -5,7 +5,7 @@ plugins {
     id 'signing'
 }
 
-archivesBaseName = "${lib_name}-${minecraft_version}"
+archivesBaseName = "catconfig-mc-${minecraft_version}"
 version version
 
 dependencies {

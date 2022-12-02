@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import net.minecraft.client.gui.widget.ClickableWidget;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
+import net.minecraft.text.TranslatableText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,7 +134,7 @@ public class RenderedConfigOptionBuilder {
          * @return this
          */
         public BuildingRenderedConfigOption<V> setCommonTranslationKey(@NotNull String translationKey) {
-            return setName(Text.translatable(translationKey)).setDescription(Text.translatable(translationKey.concat(".desc")));
+            return setName(new TranslatableText(translationKey)).setDescription(new TranslatableText(translationKey.concat(".desc")));
         }
 
         public BuildingRenderedConfigOption<V> setName(Text name) {
@@ -155,8 +157,8 @@ public class RenderedConfigOptionBuilder {
          */
         public RenderedConfigOption<V> build() {
             RenderedConfigOption<V> opt = new RenderedConfigOptionImpl<>(this.option,
-                    name == null ? Text.literal(option.name()) : name,
-                    description == null ? Text.empty() : description,
+                    name == null ? new LiteralText(option.name()) : name,
+                    description == null ? LiteralText.EMPTY : description,
                     widgetFactory == null ? w -> null : widgetFactory);
             appender.accept(opt);
             return opt;

@@ -7,6 +7,7 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.CyclingButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
@@ -25,7 +26,7 @@ final class BuiltinWidgets {
     private static final int LONG_MAX_DIGITS = Long.toString(Long.MAX_VALUE).length();
 
     static ClickableWidget createBoolWidget(ConfigAccess config, ConfigOption<Boolean> option) {
-        return new ButtonWidget(0, 0, 100, 20, Text.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false))) {
+        return new ButtonWidget(0, 0, 100, 20, LiteralText.EMPTY, button -> config.put(option, config.get(option).map(b -> !b).orElse(false))) {
             @Override
             public Text getMessage() {
                 return config.get(option).map(Object::toString).map(Text::of).orElseGet(super::getMessage);
@@ -55,7 +56,7 @@ final class BuiltinWidgets {
     }
 
     static ClickableWidget createStringWidget(ConfigAccess config, ConfigOption<String> option, boolean extendedLength) {
-        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Text.empty());
+        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, LiteralText.EMPTY);
         widget.setText(config.getOrFallback(option, ""));
         widget.setMaxLength(extendedLength ? 256 : 64);
         widget.setChangedListener(s -> config.put(option, s));
@@ -63,11 +64,11 @@ final class BuiltinWidgets {
     }
 
     static <E extends Enum<E>> ClickableWidget createEnumWidget(ConfigAccess config, ConfigOption<E> option, Class<E> enumClass) {
-        CyclingButtonWidget.Builder<E> builder = CyclingButtonWidget.builder(e -> Text.literal(e.toString().toUpperCase()));
+        CyclingButtonWidget.Builder<E> builder = CyclingButtonWidget.builder(e -> new LiteralText(e.toString().toUpperCase()));
         builder.values(enumClass.getEnumConstants());
         config.get(option).ifPresent(builder::initially);
         builder.omitKeyText();
-        return builder.build(0, 0, 100, 20, Text.empty(), (button, value) -> config.put(option, value));
+        return builder.build(0, 0, 100, 20, LiteralText.EMPTY, (button, value) -> config.put(option, value));
     }
 
     /**
@@ -84,7 +85,7 @@ final class BuiltinWidgets {
      * @param <N> The type of Number of the config option.
      */
     private static <N extends Number> TextFieldWidget createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
-        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, widgetWidth, 20, Text.empty());
+        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, widgetWidth, 20, LiteralText.EMPTY);
         widget.setText(config.get(option).map(toString).orElse(""));
         widget.setTextPredicate(s -> {
             if(s.isEmpty() || s.equals("-") || (acceptFloatingPoint && s.equals("."))) {

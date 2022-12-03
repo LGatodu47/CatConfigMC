@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A screen that allows selection between multiple config screens depending on the side.
@@ -39,7 +40,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     protected void init() {
         if(screenFactories.isEmpty()) {
             LogManager.getLogger().warn("A mod is initializing 'ConfigSideSelectionScreen' without defining first the ConfigScreenFactories! If you can determine the mod that causes this message to be logged please report it to the mod author!");
-            close();
+            onClose();
         }
 
         // pixels between buttons and screen borders
@@ -63,7 +64,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
         int rowIndex = 0;
         int columnIndex = 0;
-        for(Map.Entry<ConfigSide, ConfigScreenFactory> entry : screenFactories.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().sideName())).toList()) {
+        for(Map.Entry<ConfigSide, ConfigScreenFactory> entry : screenFactories.entrySet().stream().sorted(Comparator.comparing(e -> e.getKey().sideName())).collect(Collectors.toList())) {
             // reached maximum amount of rows, break from loop
             if(columnIndex == rowAmount) {
                 break;
@@ -71,7 +72,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
             int x = startX + rowIndex * (btnWidth + spacing);
             int y = startY + columnIndex * (btnHeight + spacing);
-            addDrawableChild(new ButtonWidget(x, y, btnWidth, btnHeight, getNameForSide(entry.getKey()), button -> this.client.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous))));
+            addButton(new ButtonWidget(x, y, btnWidth, btnHeight, getNameForSide(entry.getKey()), button -> this.client.openScreen(entry.getValue().create(isParentScreen() ? this : this.previous))));
 
             if(++rowIndex == entriesPerRow) {
                 rowIndex = 0;
@@ -79,7 +80,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
             }
         }
 
-        addDrawableChild(new ButtonWidget((width - 200) / 2, this.height - spacing - 20, 200, 20, ScreenTexts.BACK, button -> close()));
+        addButton(new ButtonWidget((width - 200) / 2, this.height - spacing - 20, 200, 20, ScreenTexts.BACK, button -> onClose()));
     }
 
     @Override
@@ -90,8 +91,8 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     }
 
     @Override
-    public void close() {
-        this.client.setScreen(this.previous);
+    public void onClose() {
+        this.client.openScreen(this.previous);
     }
 
     /**
@@ -114,7 +115,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * Builder with no dynamic language support.
      * @return a Builder instance with a preset title.
      */
-    public static ConfigSideSelectionScreen.Builder create() {
+    public static Builder create() {
         return create(new LiteralText("Select Configuration Side..."));
     }
 
@@ -123,15 +124,15 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * @param title The title of the screen that will be built.
      * @return A new Builder.
      */
-    public static ConfigSideSelectionScreen.Builder create(Text title) {
+    public static Builder create(Text title) {
         return new Builder(title);
     }
 
     @Override
     public void configUpdated() {
         if(isParentScreen()) {
-            if (previous instanceof ConfigListener listener) {
-                listener.configUpdated();
+            if (previous instanceof ConfigListener) {
+                ((ConfigListener) previous).configUpdated();
             }
         }
     }

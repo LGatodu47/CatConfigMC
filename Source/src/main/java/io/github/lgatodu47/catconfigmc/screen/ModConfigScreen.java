@@ -54,8 +54,8 @@ public class ModConfigScreen extends Screen {
         listWidget.addAll(this.config, this.renderedOptionsSupplier);
         this.list = listWidget;
         // We manually render the list because it needs to be rendered before the other children.
-        this.addSelectableChild(listWidget);
-        this.addDrawableChild(new ButtonWidget((this.width - btnWidth) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight, ScreenTexts.DONE, button -> close()));
+        this.addChild(listWidget);
+        this.addButton(new ButtonWidget((this.width - btnWidth) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight, ScreenTexts.DONE, button -> onClose()));
     }
 
     @Override
@@ -76,11 +76,10 @@ public class ModConfigScreen extends Screen {
     protected void renderAboveList(int listBottom) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
+        this.client.getTextureManager().bindTexture(OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.color4f(1, 1, 1, 1);
 
-        builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        builder.begin(7, VertexFormats.POSITION_TEXTURE_COLOR);
         builder.vertex(0.0, this.height, 1).texture(0.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255).next();
         builder.vertex(this.width, this.height, 1).texture((float) this.width / 32.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255).next();
         builder.vertex(this.width, listBottom, 1).texture((float) this.width / 32.0f, 0).color(64, 64, 64, 255).next();
@@ -90,10 +89,10 @@ public class ModConfigScreen extends Screen {
     }
 
     @Override
-    public void close() {
-        this.client.setScreen(this.parent);
-        if(this.parent instanceof ConfigListener screen) {
-            screen.configUpdated();
+    public void onClose() {
+        this.client.openScreen(this.parent);
+        if(this.parent instanceof ConfigListener) {
+            ((ConfigListener) this.parent).configUpdated();
         }
     }
 

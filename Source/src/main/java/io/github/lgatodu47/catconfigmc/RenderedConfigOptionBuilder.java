@@ -164,10 +164,36 @@ public class RenderedConfigOptionBuilder {
             return opt;
         }
 
-        private record RenderedConfigOptionImpl<V>(ConfigOption<V> option, Text displayName, Text description, Function<ConfigAccess, ClickableWidget> widgetMaker) implements RenderedConfigOption<V> {
+        private static final class RenderedConfigOptionImpl<V> implements RenderedConfigOption<V> {
+            private final ConfigOption<V> option;
+            private final Text name, description;
+            private final Function<ConfigAccess, ClickableWidget> widgetFactory;
+
+            RenderedConfigOptionImpl(ConfigOption<V> option, Text name, Text description, Function<ConfigAccess, ClickableWidget> widgetFactory) {
+                this.option = option;
+                this.name = name;
+                this.description = description;
+                this.widgetFactory = widgetFactory;
+            }
+
+            @Override
+            public ConfigOption<V> option() {
+                return option;
+            }
+
+            @Override
+            public Text displayName() {
+                return name;
+            }
+
+            @Override
+            public Text description() {
+                return description;
+            }
+
             @Override
             public @Nullable ClickableWidget createWidget(ConfigAccess config) {
-                return widgetMaker().apply(config);
+                return widgetFactory.apply(config);
             }
         }
     }

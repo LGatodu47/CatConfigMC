@@ -6,13 +6,12 @@ import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
+import net.minecraft.client.gui.hud.BackgroundHelper;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-import net.minecraft.util.math.ColorHelper;
 
 import java.util.List;
 import java.util.Optional;
@@ -109,8 +108,8 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
          * Ticks the widget if it is tick-able.
          */
         protected void tick() {
-            if(widget instanceof TextFieldWidget textField) {
-                textField.tick();
+            if(widget instanceof TextFieldWidget) {
+                ((TextFieldWidget) widget).tick();
             }
         }
 
@@ -129,17 +128,12 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
                     hoveredTime = Math.max(0, hoveredTime - 0.1F);
                 }
             }
-            DrawableHelper.fill(matrices, x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
+            DrawableHelper.fill(matrices, x, y, x + entryWidth, y + entryHeight, BackgroundHelper.ColorMixer.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
             drawTextWithShadow(matrices, client.textRenderer, option.displayName(), spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
             widget.x = x + entryWidth - spacing - widget.getWidth();
             widget.y = y + (entryHeight - widget.getHeight()) / 2;
             widget.render(matrices, mouseX, mouseY, tickDelta);
-        }
-
-        @Override
-        public List<? extends Selectable> selectableChildren() {
-            return Lists.newArrayList(widget);
         }
 
         @Override

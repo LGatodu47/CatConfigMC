@@ -8,7 +8,7 @@
   "authors": ["LGatodu47"],
   "icon": "icon.png",
   "depends": {
-    "minecraft": ">=1.18"
+    "minecraft": ">=1.16"
   },
   "custom": {
     "modmenu": {

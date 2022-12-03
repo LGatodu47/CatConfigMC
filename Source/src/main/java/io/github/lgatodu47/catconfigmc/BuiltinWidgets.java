@@ -1,21 +1,25 @@
 package io.github.lgatodu47.catconfigmc;
 
+import com.google.common.collect.ImmutableList;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
+import net.minecraft.client.gui.widget.PressableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.MathHelper;
-import org.apache.commons.lang3.function.FailableFunction;
+import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 // Package-private class that creates all the builtin widgets for specific option types.
@@ -64,11 +68,11 @@ final class BuiltinWidgets {
     }
 
     static <E extends Enum<E>> ClickableWidget createEnumWidget(ConfigAccess config, ConfigOption<E> option, Class<E> enumClass) {
-        CyclingButtonWidget.Builder<E> builder = CyclingButtonWidget.builder(e -> new LiteralText(e.toString().toUpperCase()));
-        builder.values(enumClass.getEnumConstants());
-        config.get(option).ifPresent(builder::initially);
-        builder.omitKeyText();
-        return builder.build(0, 0, 100, 20, LiteralText.EMPTY, (button, value) -> config.put(option, value));
+        return CyclingButtonWidget.create(0, 0, 100, 20,
+                config.get(option).orElse(null),
+                e -> new LiteralText(e.toString().toUpperCase()),
+                value -> config.put(option, value),
+                enumClass.getEnumConstants());
     }
 
     /**
@@ -84,7 +88,7 @@ final class BuiltinWidgets {
      * @return A TextFieldWidget that represents the given option.
      * @param <N> The type of Number of the config option.
      */
-    private static <N extends Number> TextFieldWidget createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
+    private static <N extends Number> TextFieldWidget createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, ThrowableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
         TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, widgetWidth, 20, LiteralText.EMPTY);
         widget.setText(config.get(option).map(toString).orElse(""));
         widget.setTextPredicate(s -> {
@@ -127,7 +131,8 @@ final class BuiltinWidgets {
      */
     private static int getSpaceForIntOption(ConfigOption<Integer> option) {
         int res = INT_MAX_DIGITS + 1;
-        if(option instanceof ConfigOption.NumberOption<Integer> numberOption) {
+        if(option instanceof ConfigOption.NumberOption) {
+            ConfigOption.NumberOption<Integer> numberOption = (ConfigOption.NumberOption<Integer>) option;
             Integer min = numberOption.min();
             Integer max = numberOption.max();
 
@@ -174,7 +179,8 @@ final class BuiltinWidgets {
      */
     private static <N extends Number> N clamped(N num, ConfigOption<N> option, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc) {
         N res = num;
-        if(option instanceof ConfigOption.NumberOption<N> numberOption) {
+        if(option instanceof ConfigOption.NumberOption) {
+            ConfigOption.NumberOption<N> numberOption = (ConfigOption.NumberOption<N>) option;
             N min = numberOption.min();
             N max = numberOption.max();
 
@@ -186,5 +192,71 @@ final class BuiltinWidgets {
             }
         }
         return res;
+    }
+
+    @FunctionalInterface
+    interface ThrowableFunction<T, R, X extends Throwable> {
+        R apply(T t) throws X;
+    }
+
+    private static final class CyclingButtonWidget<T> extends PressableWidget {
+        private int index;
+        private final ImmutableList<T> values;
+        private final Function<T, Text> valueToText;
+        private final Consumer<T> callback;
+
+        CyclingButtonWidget(int x, int y, int width, int height, Text message, int index, ImmutableList<T> values, Function<T, Text> valueToText, Consumer<T> callback) {
+            super(x, y, width, height, message);
+            this.index = index;
+            this.values = values;
+            this.valueToText = valueToText;
+            this.callback = callback;
+        }
+
+        @Override
+        public void onPress() {
+            if (Screen.hasShiftDown()) {
+                this.cycle(-1);
+            } else {
+                this.cycle(1);
+            }
+        }
+
+        private void cycle(int amount) {
+            List<T> list = this.values;
+            this.index = MathHelper.floorMod(this.index + amount, list.size());
+            T val = list.get(this.index);
+            this.internalSetValue(val);
+            this.callback.accept(val);
+        }
+
+        @Override
+        public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+            if (amount > 0.0) {
+                this.cycle(-1);
+            } else if (amount < 0.0) {
+                this.cycle(1);
+            }
+
+            return true;
+        }
+
+        private void internalSetValue(T value) {
+            Text text = this.valueToText.apply(value);
+            this.setMessage(text);
+        }
+
+        @SafeVarargs
+        static <T> CyclingButtonWidget<T> create(int x, int y, int width, int height, @Nullable T initialValue, Function<T, Text> valueToText, Consumer<T> callback, T... values) {
+            ImmutableList<T> list = ImmutableList.copyOf(values);
+            if (list.isEmpty()) {
+                throw new IllegalStateException("No values for cycle button");
+            } else {
+                int index = Math.max(0, list.indexOf(initialValue));
+                T value = initialValue != null ? initialValue : list.get(index);
+                Text message = valueToText.apply(value);
+                return new CyclingButtonWidget<>(x, y, width, height, message, index, list, valueToText, callback);
+            }
+        }
     }
 }

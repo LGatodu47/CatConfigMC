@@ -5,7 +5,7 @@ plugins {
     id 'signing'
 }
 
-archivesBaseName = "catconfig-mc-${minecraft_version}"
+archivesBaseName = "catconfig-mc"
 version version
 
 dependencies {
@@ -35,7 +35,7 @@ publishing {
         catconfigmc(MavenPublication) {
             groupId project.group
             artifactId project.archivesBaseName
-            version project.version
+            version "${project.minecraft_version}-${project.version}"
             from components.java
 
             pom {

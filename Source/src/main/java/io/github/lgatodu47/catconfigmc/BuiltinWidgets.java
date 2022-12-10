@@ -16,6 +16,7 @@ import java.text.DecimalFormat;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 // Package-private class that creates all the builtin widgets for specific option types.
 final class BuiltinWidgets {
@@ -25,7 +26,7 @@ final class BuiltinWidgets {
     private static final int LONG_MAX_DIGITS = Long.toString(Long.MAX_VALUE).length();
 
     static ClickableWidget createBoolWidget(ConfigAccess config, ConfigOption<Boolean> option) {
-        return new ButtonWidget(0, 0, 100, 20, Text.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false))) {
+        return new ButtonWidget(0, 0, 100, 20, Text.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false)), Supplier::get) {
             @Override
             public Text getMessage() {
                 return config.get(option).map(Object::toString).map(Text::of).orElseGet(super::getMessage);

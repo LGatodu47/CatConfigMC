@@ -70,7 +70,9 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
             int x = startX + rowIndex * (btnWidth + spacing);
             int y = startY + columnIndex * (btnHeight + spacing);
-            addDrawableChild(new ButtonWidget(x, y, btnWidth, btnHeight, getNameForSide(entry.getKey()), button -> this.client.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous))));
+            addDrawableChild(ButtonWidget.builder(getNameForSide(entry.getKey()), button -> this.client.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous)))
+                    .dimensions(x, y, btnWidth, btnHeight)
+                    .build());
 
             if(++rowIndex == entriesPerRow) {
                 rowIndex = 0;
@@ -78,7 +80,10 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
             }
         }
 
-        addDrawableChild(new ButtonWidget((width - 200) / 2, this.height - spacing - 20, 200, 20, ScreenTexts.BACK, button -> close()));
+        addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, button -> close())
+                .position((width - 200) / 2, this.height - spacing - 20)
+                .width(200)
+                .build());
     }
 
     @Override

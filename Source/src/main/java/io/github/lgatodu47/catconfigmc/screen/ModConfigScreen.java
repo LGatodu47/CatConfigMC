@@ -55,7 +55,9 @@ public class ModConfigScreen extends Screen {
         this.list = listWidget;
         // We manually render the list because it needs to be rendered before the other children.
         this.addSelectableChild(listWidget);
-        this.addDrawableChild(new ButtonWidget((this.width - btnWidth) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight, ScreenTexts.DONE, button -> close()));
+        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> close())
+                .dimensions((this.width - btnWidth) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight)
+                .build());
     }
 
     @Override
@@ -76,7 +78,7 @@ public class ModConfigScreen extends Screen {
     protected void renderAboveList(int listBottom) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
         RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
         RenderSystem.setShaderColor(1, 1, 1, 1);
 

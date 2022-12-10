@@ -52,7 +52,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
 
     @Override
     public void updateChildElementsClickedState(double mouseX, double mouseY, int button) {
-        // Fixes MC-147605
         children().stream().map(child -> child.widget).filter(TextFieldWidget.class::isInstance).forEach(field -> field.mouseClicked(mouseX, mouseY, button));
     }
 
@@ -132,8 +131,8 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
             DrawableHelper.fill(matrices, x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
             drawTextWithShadow(matrices, client.textRenderer, option.displayName(), spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
-            widget.x = x + entryWidth - spacing - widget.getWidth();
-            widget.y = y + (entryHeight - widget.getHeight()) / 2;
+            widget.setX(x + entryWidth - spacing - widget.getWidth());
+            widget.setY(y + (entryHeight - widget.getHeight()) / 2);
             widget.render(matrices, mouseX, mouseY, tickDelta);
         }
 

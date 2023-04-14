@@ -13,6 +13,8 @@ import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.function.FailableFunction;
 
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Currency;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;
@@ -47,7 +49,12 @@ final class BuiltinWidgets {
         return widget;
     }
 
-    private static final DecimalFormat FORMAT = Util.make(new DecimalFormat("#"), format -> format.setMaximumFractionDigits(8));
+    private static final DecimalFormat FORMAT = Util.make(new DecimalFormat("#"), format -> {
+        format.setMaximumFractionDigits(8);
+        DecimalFormatSymbols symbols = DecimalFormatSymbols.getInstance();
+        symbols.setDecimalSeparator('.');
+        format.setDecimalFormatSymbols(symbols);
+    });
 
     static ClickableWidget createDoubleWidget(ConfigAccess config, ConfigOption<Double> option) {
         TextFieldWidget widget = createNumberWidget(config, option, 100, FORMAT::format, Double::parseDouble, Math::min, Math::max, true);

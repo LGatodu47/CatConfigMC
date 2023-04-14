@@ -89,7 +89,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         renderBackground(matrices);
-        drawCenteredText(matrices, textRenderer, title, this.width / 2, 8, 0xFFFFFF);
+        drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 8, 0xFFFFFF);
         super.render(matrices, mouseX, mouseY, delta);
     }
 

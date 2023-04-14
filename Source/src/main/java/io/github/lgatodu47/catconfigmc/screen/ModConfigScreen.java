@@ -62,10 +62,10 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(0);
+        renderBackgroundTexture(matrices);
         list.renderImpl(matrices, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
-        drawCenteredText(matrices, textRenderer, title, this.width / 2, 8, 0xFFFFFF);
+        drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 8, 0xFFFFFF);
         super.render(matrices, mouseX, mouseY, delta);
         list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> renderTooltip(matrices, desc, mouseX, mouseY));
     }

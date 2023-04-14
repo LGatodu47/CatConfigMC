@@ -5,7 +5,7 @@ import io.github.lgatodu47.catconfigmc.MinecraftConfigSides;
 import net.fabricmc.api.ClientModInitializer;
 
 public class TestModClient implements ClientModInitializer {
-    // This is just an example, never store fields like that in your main mod class
+    // This is just an example, avoid declaring fields like that in your main mod class
     public static CatConfig CONFIG;
 
     @Override

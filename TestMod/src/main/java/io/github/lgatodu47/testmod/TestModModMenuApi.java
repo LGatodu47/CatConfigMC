@@ -14,7 +14,7 @@ public class TestModModMenuApi implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        // If you want to skip the selection screen and open directly the mod config screen, you can replace by this line:
+        // If you want to skip the selection screen and open directly the mod config screen, you can replace it with this line:
         // return parent -> new ModConfigScreen(Text.literal("TestMod Client Config"), parent, TestModClient.CONFIG, MyRenderedOptions.Client::options);
         return BUILDER::build;
     }

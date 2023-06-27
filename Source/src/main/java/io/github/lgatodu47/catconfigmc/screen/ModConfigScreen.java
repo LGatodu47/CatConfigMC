@@ -3,10 +3,10 @@ package io.github.lgatodu47.catconfigmc.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
@@ -61,13 +61,15 @@ public class ModConfigScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(matrices);
-        list.renderImpl(matrices, mouseX, mouseY, delta);
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackgroundTexture(context);
+        list.renderImpl(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
-        drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 8, 0xFFFFFF);
-        super.render(matrices, mouseX, mouseY, delta);
-        list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> renderTooltip(matrices, desc, mouseX, mouseY));
+        context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
+        context.getMatrices().translate(0, 0, 2);
+        super.render(context, mouseX, mouseY, delta);
+        context.getMatrices().translate(0, 0, -2);
+        list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> context.drawTooltip(textRenderer, desc, mouseX, mouseY));
     }
 
     /**
@@ -125,7 +127,7 @@ public class ModConfigScreen extends Screen {
             }
 
             @Override
-            public void renderImpl(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+            public void renderImpl(DrawContext context, int mouseX, int mouseY, float delta) {
             }
 
             @Override
@@ -151,7 +153,7 @@ public class ModConfigScreen extends Screen {
         /**
          * Render method of the widget.
          */
-        void renderImpl(MatrixStack matrices, int mouseX, int mouseY, float delta);
+        void renderImpl(DrawContext context, int mouseX, int mouseY, float delta);
 
         /**
          * Updates the child elements of the list by calling 'onMouseClicked'.

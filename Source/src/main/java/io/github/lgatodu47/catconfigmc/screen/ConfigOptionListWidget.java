@@ -4,13 +4,12 @@ import com.google.common.collect.Lists;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.ColorHelper;
 
@@ -46,8 +45,8 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
 
     // We can't just leave the same method names as it wouldn't work in obfuscated environment.
     @Override
-    public void renderImpl(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        render(matrices, mouseX, mouseY, delta);
+    public void renderImpl(DrawContext context, int mouseX, int mouseY, float delta) {
+        render(context, mouseX, mouseY, delta);
     }
 
     @Override
@@ -117,7 +116,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
         protected float hoveredTime;
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             if(hovered) {
                 if(hoveredTime < 1) {
                     hoveredTime = Math.min(1, hoveredTime + 0.1F);
@@ -128,12 +127,12 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
                     hoveredTime = Math.max(0, hoveredTime - 0.1F);
                 }
             }
-            DrawableHelper.fill(matrices, x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
+            context.fill(x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
-            drawTextWithShadow(matrices, client.textRenderer, option.displayName(), spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
+            context.drawTextWithShadow(client.textRenderer, option.displayName(), spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
             widget.setX(x + entryWidth - spacing - widget.getWidth());
             widget.setY(y + (entryHeight - widget.getHeight()) / 2);
-            widget.render(matrices, mouseX, mouseY, tickDelta);
+            widget.render(context, mouseX, mouseY, tickDelta);
         }
 
         @Override

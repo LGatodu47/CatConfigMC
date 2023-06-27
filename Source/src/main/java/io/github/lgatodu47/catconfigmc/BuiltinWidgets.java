@@ -14,7 +14,6 @@ import org.apache.commons.lang3.function.FailableFunction;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.Currency;
 import java.util.Objects;
 import java.util.function.BinaryOperator;
 import java.util.function.Function;

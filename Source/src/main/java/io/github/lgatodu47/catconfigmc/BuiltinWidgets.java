@@ -2,6 +2,7 @@ package io.github.lgatodu47.catconfigmc;
 
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
+import io.github.lgatodu47.catconfig.NumberOption;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.ClickableWidget;
@@ -133,7 +134,7 @@ final class BuiltinWidgets {
      */
     private static int getSpaceForIntOption(ConfigOption<Integer> option) {
         int res = INT_MAX_DIGITS + 1;
-        if(option instanceof ConfigOption.NumberOption<Integer> numberOption) {
+        if(option instanceof NumberOption<Integer> numberOption) {
             Integer min = numberOption.min();
             Integer max = numberOption.max();
 
@@ -180,7 +181,7 @@ final class BuiltinWidgets {
      */
     private static <N extends Number> N clamped(N num, ConfigOption<N> option, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc) {
         N res = num;
-        if(option instanceof ConfigOption.NumberOption<N> numberOption) {
+        if(option instanceof NumberOption<N> numberOption) {
             N min = numberOption.min();
             N max = numberOption.max();
 

@@ -14,6 +14,11 @@ dependencies {
     configurations.implementation.dependencies.stream()
             .filter(d -> d.group == "io.github.lgatodu47" && d.name == "catconfig")
     .forEach(d -> include d)
+    // fabric's mixin fork
+    api("net.fabricmc:sponge-mixin:${mixin_version}") {
+        exclude module: 'launchwrapper'
+        exclude module: 'guava'
+    }
 }
 
 loom {

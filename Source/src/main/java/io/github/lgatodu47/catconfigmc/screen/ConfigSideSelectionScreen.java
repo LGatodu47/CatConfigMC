@@ -23,6 +23,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     protected final Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories;
     protected int entriesPerRow = 3;
     protected int maxRowAmount = 3;
+    protected boolean isParentScreen = false;
 
     protected ConfigSideSelectionScreen(Text title, Screen previous, Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories) {
         super(title);
@@ -30,8 +31,20 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
         this.screenFactories = screenFactories;
     }
 
-    public void addConfigScreen(ConfigSide side, @NotNull ConfigScreenFactory screenFactory) {
+    public ConfigSideSelectionScreen addConfigScreen(ConfigSide side, @NotNull ConfigScreenFactory screenFactory) {
         screenFactories.put(side, screenFactory);
+        return this;
+    }
+
+    protected ConfigSideSelectionScreen setParentScreen(boolean value) {
+        this.isParentScreen = value;
+        return this;
+    }
+
+    protected ConfigSideSelectionScreen setDimensions(int entriesPerRow, int maxRowAmount) {
+        this.entriesPerRow = entriesPerRow;
+        this.maxRowAmount = maxRowAmount;
+        return this;
     }
 
     @Override
@@ -111,7 +124,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * created by this screen will have it as parent. Look at the usage in 'init' for better understanding.
      */
     protected boolean isParentScreen() {
-        return false;
+        return isParentScreen;
     }
 
     /**
@@ -143,6 +156,8 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     public static class Builder {
         private final Text title;
         protected final Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories = new HashMap<>();
+        protected boolean isParentScreen = false;
+        protected int entriesPerRow = 3, maxRowAmount = 3;
 
         Builder(Text title) {
             this.title = title;
@@ -160,12 +175,34 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
         }
 
         /**
+         * Sets the building screen to be the parent screen.
+         * @see ConfigSideSelectionScreen#isParentScreen()
+         * @return this
+         */
+        public Builder setParentScreen() {
+            this.isParentScreen = true;
+            return this;
+        }
+
+        /**
+         * Sets the 'dimensions' of the building screen's content.
+         * @param entriesPerRow The number of entries per content row.
+         * @param maxRowAmount The max number of rows.
+         * @return this
+         */
+        protected Builder setDimensions(int entriesPerRow, int maxRowAmount) {
+            this.entriesPerRow = entriesPerRow;
+            this.maxRowAmount = maxRowAmount;
+            return this;
+        }
+
+        /**
          * Creates the screen using the builder info.
          * @param previous The previous screen that opened this one.
          * @return a new instance of ConfigSideSelectionScreen.
          */
         public ConfigSideSelectionScreen build(Screen previous) {
-            return new ConfigSideSelectionScreen(title, previous, screenFactories);
+            return new ConfigSideSelectionScreen(title, previous, screenFactories).setParentScreen(isParentScreen).setDimensions(entriesPerRow, maxRowAmount);
         }
     }
 

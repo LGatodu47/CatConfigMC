@@ -7,6 +7,9 @@
   "license": "MIT",
   "authors": ["LGatodu47"],
   "icon": "icon.png",
+  "mixins": [
+    "catconfigmc.mixins.json"
+  ],
   "depends": {
     "minecraft": ">=1.20"
   },

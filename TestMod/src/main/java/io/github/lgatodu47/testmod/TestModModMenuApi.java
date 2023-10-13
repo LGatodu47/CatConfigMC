@@ -10,7 +10,8 @@ import net.minecraft.text.Text;
 public class TestModModMenuApi implements ModMenuApi {
     private static final ConfigSideSelectionScreen.Builder BUILDER = ConfigSideSelectionScreen.create()
             .with(MinecraftConfigSides.CLIENT, parent -> new ModConfigScreen(Text.literal("TestMod Client Config"), parent, TestModClient.CONFIG, MyRenderedOptions.Client::options))
-            .with(MinecraftConfigSides.COMMON, parent -> new ModConfigScreen(Text.literal("TestMod Common Config"), parent, TestMod.CONFIG, MyRenderedOptions.Common::options));
+            .with(MinecraftConfigSides.COMMON, parent -> new ModConfigScreen(Text.literal("TestMod Common Config"), parent, TestMod.CONFIG, MyRenderedOptions.Common::options))
+            .setParentScreen();
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {

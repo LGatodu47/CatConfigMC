@@ -25,7 +25,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
 
     @Override
     public void tick() {
-        this.children().forEach(ConfigOptionEntry::tick);
     }
 
     @Override
@@ -101,15 +100,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.ConfigOptio
             this.client = client;
             this.option = option;
             this.widget = widget;
-        }
-
-        /**
-         * Ticks the widget if it is tick-able.
-         */
-        protected void tick() {
-            if(widget instanceof TextFieldWidget textField) {
-                textField.tick();
-            }
         }
 
         // Time for which the entry has been hovered. Between 0 and 1.

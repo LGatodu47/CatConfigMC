@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
@@ -67,7 +68,7 @@ public class ModConfigScreen extends Screen {
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
         context.getMatrices().translate(0, 0, 2);
-        super.render(context, mouseX, mouseY, delta);
+        children().stream().filter(Drawable.class::isInstance).map(Drawable.class::cast).forEachOrdered(drawable -> drawable.render(context, mouseX, mouseY, delta));
         context.getMatrices().translate(0, 0, -2);
         list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> context.drawTooltip(textRenderer, desc, mouseX, mouseY));
     }

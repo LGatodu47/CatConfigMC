@@ -1,18 +1,21 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
 import com.google.common.collect.Lists;
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
+import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
 import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
@@ -22,10 +25,9 @@ import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEntry<E>> extends ElementListWidget<E> implements ModConfigScreen.IConfigOptionListWidget, EntryListWidgetExtension {
+public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEntry<E>> extends ElementListWidget<E> implements ModConfigScreen.IConfigOptionListWidget {
     public ConfigOptionListWidget(MinecraftClient client, int width, int height, int top, int bottom) {
         super(client, width, height, top, bottom, 36);
     }
@@ -50,31 +52,8 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         return this.width - 6;
     }
 
-    /*@Nullable
-    @Override
+    /*@Override
     protected E getEntryAtPosition(double x, double y) {
-        int halfRowWidth = this.getRowWidth() / 2;
-        int listCenter = this.left + this.width / 2;
-        int rowStartX = listCenter - halfRowWidth;
-        int rowEndX = listCenter + halfRowWidth;
-
-        int rowYOffset = MathHelper.floor(y - (double) this.top) - this.headerHeight + (int) this.getScrollAmount() - 4;
-        int rowIndex = -1;
-        for (int i = 0; i < children().size(); i++) {
-            if(rowYOffset - getRowYOffset(i) <= 0) {
-                rowIndex = i;
-                break;
-            }
-        }
-
-        if(x < (double) getScrollbarPositionX() && x >= (double) rowStartX && x <= (double) rowEndX && rowIndex >= 0 && rowYOffset >= 0 && rowIndex < getEntryCount()) {
-            return children().get(rowIndex);
-        }
-        return null;
-    }*/
-
-    @Override
-    public @Nullable Object catconfigmc$getEntryAtPosition(double x, double y) {
         int halfRowWidth = this.getRowWidth() / 2;
         int listCenter = this.left + this.width / 2;
         int rowStartX = listCenter - halfRowWidth;
@@ -93,7 +72,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             return children().get(rowIndex);
         }
         return null;
-    }
+    }*/
 
     @Override
     protected int getMaxPosition() {
@@ -120,6 +99,38 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
+    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+        int scrollbarPositionX = this.getScrollbarPositionX();
+        int scrollBarWidth = scrollbarPositionX + 6;
+        int rowLeft = this.getRowLeft();
+        int hearderHeight = this.top + 4 - (int)this.getScrollAmount();
+
+        renderBackground(context);
+        enableScissor(context);
+        renderHeader(context, rowLeft, hearderHeight);
+        renderList(context, mouseX, mouseY, delta);
+        context.disableScissor();
+        renderHorizontalShadows(context);
+
+        int maxScroll = this.getMaxScroll();
+        if (maxScroll > 0) {
+            int scrollbarHeight = (int) ((float) ((this.bottom - this.top) * (this.bottom - this.top)) / (float) this.getMaxPosition());
+            scrollbarHeight = MathHelper.clamp(scrollbarHeight, 32, this.bottom - this.top - 8);
+            int scrollY = (int)this.getScrollAmount() * (this.bottom - this.top - scrollbarHeight) / maxScroll + this.top;
+            if (scrollY < this.top) {
+                scrollY = this.top;
+            }
+
+            context.fill(scrollbarPositionX, this.top, scrollBarWidth, this.bottom, -16777216);
+            context.fill(scrollbarPositionX, scrollY, scrollBarWidth, scrollY + scrollbarHeight, -8355712);
+            context.fill(scrollbarPositionX, scrollY, scrollBarWidth - 1, scrollY + scrollbarHeight - 1, -4144960);
+        }
+
+        renderDecorations(context, mouseX, mouseY);
+        RenderSystem.disableBlend();
+    }
+
+    @Override
     protected void renderList(DrawContext context, int mouseX, int mouseY, float delta) {
         int rowLeft = getRowLeft();
         int rowWidth = getRowWidth();
@@ -133,6 +144,16 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
                 renderEntry(context, mouseX, mouseY, delta, i, rowLeft, rowTop, rowWidth, getRowHeight(i));
             }
         }
+    }
+
+    public void renderHorizontalShadows(DrawContext context) {
+//        context.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
+//        context.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, 0, 0.0F, 0.0F, this.width, this.top, 32, 32);
+//        context.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, this.bottom, 0.0F, (float)this.bottom, this.width, this.height - this.bottom, 32, 32);
+//        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+
+        context.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.top, this.right, this.top + 4, -16777216, 0, 0);
+        context.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.bottom - 4, this.right, this.bottom, 0, -16777216, 0);
     }
 
     @Override
@@ -165,17 +186,17 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @SuppressWarnings("unchecked")
-    public void addAll(ConfigAccess config, Supplier<Collection<RenderedConfigOption<?>>> renderedOptionsSupplier, Predicate<ConfigOption<?>> optionChanged) {
-        Map<String, ConfigCategoryEntry<?>> categoryEntries = renderedOptionsSupplier.get()
+    public void addAll(ConfigAccess config, RenderedConfigOptionAccess renderedOptions, Predicate<ConfigOption<?>> optionChanged) {
+        Map<String, ConfigCategoryEntry<?>> categoryEntries = renderedOptions.optionsToRender()
                 .stream()
                 .map(option -> option.option().optionPath())
                 .map(path -> path.substring(0, path.lastIndexOf(ConfigOption.CATEGORY_SEPARATOR)))
                 .filter(path -> !path.isEmpty())
                 .distinct()
-                .collect(Collectors.toMap(Function.identity(), path -> new ConfigCategoryEntry<>(this.client, Text.literal(path.substring(path.lastIndexOf(ConfigOption.CATEGORY_SEPARATOR) + 1)))));
+                .collect(Collectors.toMap(Function.identity(), path -> new ConfigCategoryEntry<>(this.client, renderedOptions.getNameForCategory(path, () -> Text.literal(path.substring(path.lastIndexOf(ConfigOption.CATEGORY_SEPARATOR) + 1))), renderedOptions.getDescriptionForCategory(path))));
 
         List<AbstractEntry<?>> finalEntries = new ArrayList<>();
-        for (RenderedConfigOption<?> option : renderedOptionsSupplier.get()) {
+        for (RenderedConfigOption<?> option : renderedOptions.optionsToRender()) {
             ClickableWidget widget = option.createWidget(config);
             if(widget == null) {
                 continue;
@@ -200,9 +221,11 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
                     categoryEntries.get(categoryPath).addEntry(categoryEntry);
                     continue categories_loop;
                 }
-                categoryEntries.put(categoryPath, Util.make(new ConfigCategoryEntry<>(this.client, Text.literal(categoryPath.substring(categoryPath.lastIndexOf(ConfigOption.CATEGORY_SEPARATOR) + 1))), entry -> entry.addEntry(categoryEntry)));
+                final String finalCategoryPath = categoryPath;
+                categoryEntries.put(categoryPath, Util.make(new ConfigCategoryEntry<>(this.client, renderedOptions.getNameForCategory(categoryPath, () -> Text.literal(finalCategoryPath.substring(finalCategoryPath.lastIndexOf(ConfigOption.CATEGORY_SEPARATOR) + 1))), renderedOptions.getDescriptionForCategory(categoryPath)), entry -> entry.addEntry(categoryEntry)));
             }
-            finalEntries.add(categoryEntries.getOrDefault(categoryPath, new ConfigCategoryEntry<>(this.client, Text.literal(categoryPath.substring(1)))));
+            final String finalCategoryPath1 = categoryPath;
+            finalEntries.add(categoryEntries.getOrDefault(categoryPath, new ConfigCategoryEntry<>(this.client, renderedOptions.getNameForCategory(categoryPath, () -> Text.literal(finalCategoryPath1.substring(1))), renderedOptions.getDescriptionForCategory(categoryPath))));
         }
 
         finalEntries.stream().filter(Objects::nonNull).forEach(abstractEntry -> this.addEntry((E) abstractEntry));
@@ -226,21 +249,9 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         return OptionalInt.of(this.bottom);
     }
 
-    /**
-     * Creates a new entry of type E for this list widget.
-     *
-     * @param option The rendered config passed down to the entry constructor.
-     * @param widget The widget passed down to the entry constructor.
-     * @param changed A boolean supplier used to determine whether the value was altered.
-     * @return A new entry of the type required by this list.
-     */
-    @SuppressWarnings("unchecked")
-    protected E makeEntry(RenderedConfigOption<?> option, ClickableWidget widget, BooleanSupplier changed) {
-        return (E) new ConfigOptionEntry<>(this.client, option, widget, changed);
-    }
-
-    public static abstract class AbstractEntry<E extends AbstractEntry<E>> extends Entry<E> implements Selectable {
+    public static abstract class AbstractEntry<E extends AbstractEntry<E>> extends Entry<E> {
         protected final MinecraftClient client;
+        protected boolean hovered;
 
         protected AbstractEntry(MinecraftClient client) {
             this.client = client;
@@ -260,21 +271,13 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
         @Override
         public boolean isMouseOver(double mouseX, double mouseY) {
-            return false;
+            return hovered;
         }
 
+        @Deprecated
         @Override
-        public void appendNarrations(NarrationMessageBuilder builder) {
-        }
-
-        @Override
-        public SelectionType getType() {
-            return SelectionType.FOCUSED;
-        }
-
-        @Override
-        public boolean isNarratable() {
-            return false;
+        public List<? extends Selectable> selectableChildren() {
+            return List.of();
         }
     }
 
@@ -317,7 +320,8 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         protected float hoveredTime;
 
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean unused, float tickDelta) {
+            hovered = mouseX > x && mouseX <= x + entryWidth && mouseY > y && mouseY <= y + 36;
             if(hovered) {
                 if(hoveredTime < 1) {
                     hoveredTime = Math.min(1, hoveredTime + 0.1F);
@@ -330,12 +334,26 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             }
             context.fill(x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
-            context.drawTextWithShadow(client.textRenderer, option.displayName().copy().styled(style -> style.withItalic(changed.getAsBoolean())), spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
+            context.drawTextWithShadow(client.textRenderer, option.displayName().copy().styled(style -> style.withItalic(changed.getAsBoolean())), x + spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
             widget.setX(x + entryWidth - spacing - widget.getWidth());
             widget.setY(y + (entryHeight - widget.getHeight()) / 2);
             widget.render(context, mouseX, mouseY, tickDelta);
         }
 
+        @Override
+        public boolean mouseClicked(double mouseX, double mouseY, int button) {
+            if(widget.mouseClicked(mouseX, mouseY, button)) {
+                setFocused(widget);
+                if(button == 0) {
+                    setDragging(true);
+                }
+                return true;
+            }
+            setFocused(null);
+            return false;
+        }
+
+        @SuppressWarnings("deprecation")
         @Override
         public List<? extends Selectable> selectableChildren() {
             return Lists.newArrayList(widget);
@@ -349,12 +367,15 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     public static class ConfigCategoryEntry<E extends ConfigCategoryEntry<E>> extends AbstractEntry<E> {
         protected final Text categoryName;
+        @Nullable
+        protected final Text categoryDesc;
         private final List<AbstractEntry<?>> entries;
-        private boolean showing, hoveringListTop;
+        private boolean showing;
 
-        public ConfigCategoryEntry(MinecraftClient client, Text categoryName) {
+        public ConfigCategoryEntry(MinecraftClient client, Text categoryName, @Nullable Text categoryDesc) {
             super(client);
             this.categoryName = categoryName;
+            this.categoryDesc = categoryDesc;
             this.entries = new ArrayList<>();
         }
 
@@ -364,7 +385,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
         @Override
         protected int entryHeight() {
-            return showing ? this.entries.stream().mapToInt(AbstractEntry::entryHeight).sum() : 36;
+            return showing ? this.entries.stream().mapToInt(AbstractEntry::entryHeight).sum() + 36 : 36;
         }
 
         @Override
@@ -374,48 +395,64 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
         @Override
         protected Optional<Text> getHoveringDescription(double mouseX, double mouseY) {
-//            for (AbstractEntry<?> entry : entries) {
-//                Optional<Text> desc = entry.getHoveringDescription(mouseX, mouseY);
-//                if(desc.isPresent()) {
-//                    return desc;
-//                }
-//            }
+            if(hovered && categoryDesc != null) {
+                return Optional.of(categoryDesc);
+            }
+            if(!showing) {
+                return Optional.empty();
+            }
+            for (AbstractEntry<?> entry : entries) {
+                Optional<Text> desc = entry.getHoveringDescription(mouseX, mouseY);
+                if(desc.isPresent()) {
+                    return desc;
+                }
+            }
             return Optional.empty();
         }
 
+        // Time for which the entry has been hovered. Between 0 and 1.
+        protected float hoveredTime;
+
         @Override
-        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
-            hoveringListTop = mouseX > x && mouseX <= x + entryWidth && mouseY > y && mouseY <= y + 36;
-            context.fill(x, y, x + entryWidth, y + 36, ColorHelper.Argb.getArgb(hoveringListTop ? 40 : 0, 65, 65, 65));
+        public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean unused, float tickDelta) {
+            hovered = mouseX > x && mouseX <= x + entryWidth && mouseY > y && mouseY <= y + 36;
+            if(hovered) {
+                if(hoveredTime < 1) {
+                    hoveredTime = Math.min(1, hoveredTime + 0.1F);
+                }
+            }
+            else {
+                if(hoveredTime > 0) {
+                    hoveredTime = Math.max(0, hoveredTime - 0.1F);
+                }
+            }
+            context.fill(x, y, x + entryWidth, y + 36, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
-            context.drawTextWithShadow(client.textRenderer, categoryName, spacing, y + (36 - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
+            context.drawTextWithShadow(client.textRenderer, categoryName.copy().formatted(Formatting.YELLOW), x + spacing, y + (36 - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
 
             if(showing) {
+                final int entryXOffset = 10;
                 for (int i = 0; i < entries.size(); i++) {
                     AbstractEntry<?> entry = entries.get(i);
-                    entry.render(context, i, y + 36 + entries.subList(0, i).stream().mapToInt(AbstractEntry::entryHeight).sum(), x + 20, entryWidth - 20, entry.entryHeight(), mouseX, mouseY, false, tickDelta);
+                    entry.render(context, i, y + 36 + entries.subList(0, i).stream().mapToInt(AbstractEntry::entryHeight).sum(), x + entryXOffset, entryWidth - entryXOffset, entry.entryHeight(), mouseX, mouseY, false, tickDelta);
                 }
             }
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            if(hoveringListTop) {
-                showing = !showing;
-                return true;
-            }
-            return showing && children().stream().filter(element -> element.mouseClicked(mouseX, mouseY, button)).findFirst().filter(element -> {
+            boolean clickResult = showing && children().stream().filter(element -> element.mouseClicked(mouseX, mouseY, button)).findFirst().filter(element -> {
                 setFocused(element);
                 if (button == 0) {
                     setDragging(true);
                 }
                 return true;
             }).isPresent();
-        }
-
-        @Override
-        public List<? extends Selectable> selectableChildren() {
-            return List.copyOf(this.entries);
+            if(hovered) {
+                showing = !showing;
+                return true;
+            }
+            return clickResult;
         }
 
         @Override

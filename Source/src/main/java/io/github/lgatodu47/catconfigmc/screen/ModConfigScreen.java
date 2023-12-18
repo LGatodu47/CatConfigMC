@@ -4,44 +4,49 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
-import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
+import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.function.Supplier;
 
 public class ModConfigScreen extends Screen {
     protected final Screen parent;
     // A config for one side only.
     protected final CatConfig config;
     protected final UnsavedConfig unsavedConfig;
-    // A supplier for all the rendered config options
-    protected final Supplier<Collection<RenderedConfigOption<?>>> renderedOptionsSupplier;
+    protected final RenderedConfigOptionAccess renderedOptions;
     // The list widget. The interface defined below is just to avoid issues with nullability.
     @NotNull
     protected IConfigOptionListWidget list = IConfigOptionListWidget.NONE;
     protected ConfigListener listeners = () -> {};
+    protected Identifier backgroundTexture = OPTIONS_BACKGROUND_TEXTURE;
 
-    public ModConfigScreen(Text title, Screen parent, CatConfig config, Supplier<Collection<RenderedConfigOption<?>>> renderedOptionsSupplier) {
+    public ModConfigScreen(Text title, Screen parent, CatConfig config, RenderedConfigOptionAccess renderedOptions) {
         super(title);
         this.parent = parent;
         this.config = config;
         this.unsavedConfig = new UnsavedConfig(config);
-        this.renderedOptionsSupplier = renderedOptionsSupplier;
+        this.renderedOptions = renderedOptions;
     }
 
     // NOTE: this method removes all previous listeners.
     public ModConfigScreen withListeners(ConfigListener... listeners) {
         this.listeners = ConfigListener.combine(listeners);
+        return this;
+    }
+
+    public ModConfigScreen withBackgroundTexture(Identifier texture) {
+        this.backgroundTexture = texture;
         return this;
     }
 
@@ -57,14 +62,14 @@ public class ModConfigScreen extends Screen {
         final int btnWidth = 150;
 
         ConfigOptionListWidget<?> listWidget = new ConfigOptionListWidget<>(this.client, this.width, this.height - spacing * 5 - btnHeight, spacing * 3, this.height - spacing * 2 - btnHeight);
-        listWidget.addAll(this.unsavedConfig, this.renderedOptionsSupplier, this.unsavedConfig::changed);
+        listWidget.addAll(this.unsavedConfig, this.renderedOptions, this.unsavedConfig::changed);
         this.list = listWidget;
         // We manually render the list because it needs to be rendered before the other children.
         this.addSelectableChild(listWidget);
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.CANCEL, button -> close())
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("button.catconfigmc.config.discard_changes").formatted(Formatting.RED), button -> close())
                 .dimensions((this.width - spacing) / 2 - btnWidth, this.height - btnHeight - spacing, btnWidth, btnHeight)
                 .build());
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> saveAndClose())
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("button.catconfigmc.config.save_changes").formatted(Formatting.GREEN), button -> saveAndClose())
                 .dimensions((this.width + spacing) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight)
                 .build());
     }
@@ -90,7 +95,7 @@ public class ModConfigScreen extends Screen {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder builder = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        RenderSystem.setShaderTexture(0, OPTIONS_BACKGROUND_TEXTURE);
+        RenderSystem.setShaderTexture(0, backgroundTexture);
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
         builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -105,6 +110,13 @@ public class ModConfigScreen extends Screen {
     protected void saveAndClose() {
         this.unsavedConfig.saveChanges();
         close();
+    }
+
+    @Override
+    public void renderBackgroundTexture(DrawContext context) {
+        context.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
+        context.drawTexture(this.backgroundTexture, 0, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32);
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override

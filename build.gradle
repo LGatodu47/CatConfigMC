@@ -13,10 +13,6 @@ subprojects {
             name 'OSSRH'
             url 'https://s01.oss.sonatype.org/content/repositories/releases'
         }
-        maven {
-            name 'CatConfig Local'
-            url (parent.projectDir.toPath().resolveSibling('CatConfig/build/repo').toAbsolutePath().toString())
-        }
     }
 
     dependencies {

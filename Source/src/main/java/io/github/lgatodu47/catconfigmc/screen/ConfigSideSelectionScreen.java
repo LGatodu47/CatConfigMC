@@ -132,7 +132,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * @return a Builder instance with a preset title.
      */
     public static ConfigSideSelectionScreen.Builder create() {
-        return create(Text.literal("Select Configuration Side..."));
+        return create(Text.translatable("screen.catconfigmc.config_selection_screen"));
     }
 
     /**

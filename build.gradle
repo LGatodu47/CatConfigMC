@@ -16,6 +16,6 @@ subprojects {
     }
 
     dependencies {
-        implementation 'io.github.lgatodu47:catconfig:0.2.4'
+        implementation 'io.github.lgatodu47:catconfig:0.3.0'
     }
 }

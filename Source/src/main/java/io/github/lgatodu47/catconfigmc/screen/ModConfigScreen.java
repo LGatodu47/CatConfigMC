@@ -2,41 +2,51 @@ package io.github.lgatodu47.catconfigmc.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
-import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
+import io.github.lgatodu47.catconfig.ConfigAccess;
+import io.github.lgatodu47.catconfig.ConfigOption;
+import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
+import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.render.*;
-import net.minecraft.screen.ScreenTexts;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.Optional;
-import java.util.OptionalInt;
-import java.util.function.Supplier;
+import java.util.*;
 
 public class ModConfigScreen extends Screen {
     protected final Screen parent;
     // A config for one side only.
     protected final CatConfig config;
-    // A supplier for all the rendered config options
-    protected final Supplier<Iterable<RenderedConfigOption<?>>> renderedOptionsSupplier;
+    protected final UnsavedConfig unsavedConfig;
+    protected final RenderedConfigOptionAccess renderedOptions;
     // The list widget. The interface defined below is just to avoid issues with nullability.
     @NotNull
     protected IConfigOptionListWidget list = IConfigOptionListWidget.NONE;
     protected ConfigListener listeners = () -> {};
+    protected Identifier backgroundTexture = OPTIONS_BACKGROUND_TEXTURE;
 
-    public ModConfigScreen(Text title, Screen parent, CatConfig config, Supplier<Iterable<RenderedConfigOption<?>>> renderedOptionsSupplier) {
+    public ModConfigScreen(Text title, Screen parent, CatConfig config, RenderedConfigOptionAccess renderedOptions) {
         super(title);
         this.parent = parent;
         this.config = config;
-        this.renderedOptionsSupplier = renderedOptionsSupplier;
+        this.unsavedConfig = new UnsavedConfig(config);
+        this.renderedOptions = renderedOptions;
     }
 
     // NOTE: this method removes all previous listeners.
     public ModConfigScreen withListeners(ConfigListener... listeners) {
         this.listeners = ConfigListener.combine(listeners);
+        return this;
+    }
+
+    public ModConfigScreen withBackgroundTexture(Identifier texture) {
+        this.backgroundTexture = texture;
         return this;
     }
 
@@ -49,22 +59,25 @@ public class ModConfigScreen extends Screen {
     protected void init() {
         final int spacing = 8;
         final int btnHeight = 20;
-        final int btnWidth = 200;
+        final int btnWidth = 150;
 
         ConfigOptionListWidget<?> listWidget = new ConfigOptionListWidget<>(this.client, this.width, this.height - spacing * 5 - btnHeight, spacing * 3, this.height - spacing * 2 - btnHeight);
-        listWidget.addAll(this.config, this.renderedOptionsSupplier);
+        listWidget.addAll(this.unsavedConfig, this.renderedOptions, this.unsavedConfig::changed);
         this.list = listWidget;
         // We manually render the list because it needs to be rendered before the other children.
         this.addSelectableChild(listWidget);
-        this.addDrawableChild(ButtonWidget.builder(ScreenTexts.DONE, button -> close())
-                .dimensions((this.width - btnWidth) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight)
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("button.catconfigmc.config.discard_changes").formatted(Formatting.RED), button -> close())
+                .dimensions((this.width - spacing) / 2 - btnWidth, this.height - btnHeight - spacing, btnWidth, btnHeight)
+                .build());
+        this.addDrawableChild(ButtonWidget.builder(Text.translatable("button.catconfigmc.config.save_changes").formatted(Formatting.GREEN), button -> saveAndClose())
+                .dimensions((this.width + spacing) / 2, this.height - btnHeight - spacing, btnWidth, btnHeight)
                 .build());
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackgroundTexture(context);
-        list.renderImpl(context, mouseX, mouseY, delta);
+        list.render(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
         context.getMatrices().translate(0, 0, 2);
@@ -94,6 +107,18 @@ public class ModConfigScreen extends Screen {
         tessellator.draw();
     }
 
+    protected void saveAndClose() {
+        this.unsavedConfig.saveChanges();
+        close();
+    }
+
+    @Override
+    public void renderBackgroundTexture(DrawContext context) {
+        context.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
+        context.drawTexture(this.backgroundTexture, 0, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32);
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
     @Override
     public void close() {
         this.client.setScreen(this.parent);
@@ -110,29 +135,26 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        list.updateChildElementsClickedState(mouseX, mouseY, button);
-        return super.mouseClicked(mouseX, mouseY, button);
+        return children().stream().filter(element -> element.mouseClicked(mouseX, mouseY, button)).findFirst().filter(element -> {
+            setFocused(element);
+            if (button == 0) {
+                setDragging(true);
+            }
+            return true;
+        }).isPresent();
     }
 
     /**
      * Interface just used to avoid having a null ConfigOptionListWidget.
      * Defines all the methods that this parent class uses.
      */
-    public interface IConfigOptionListWidget {
+    public interface IConfigOptionListWidget extends Element, Drawable {
         /**
          * Implementation where there is simply no list.
          */
         IConfigOptionListWidget NONE = new IConfigOptionListWidget() {
             @Override
             public void tick() {
-            }
-
-            @Override
-            public void renderImpl(DrawContext context, int mouseX, int mouseY, float delta) {
-            }
-
-            @Override
-            public void updateChildElementsClickedState(double mouseX, double mouseY, int button) {
             }
 
             @Override
@@ -144,22 +166,25 @@ public class ModConfigScreen extends Screen {
             public OptionalInt bottom() {
                 return OptionalInt.empty();
             }
+
+            @Override
+            public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+            }
+
+            @Override
+            public void setFocused(boolean focused) {
+            }
+
+            @Override
+            public boolean isFocused() {
+                return false;
+            }
         };
 
         /**
          * Tick method that is called from the parent screen tick method.
          */
         void tick();
-
-        /**
-         * Render method of the widget.
-         */
-        void renderImpl(DrawContext context, int mouseX, int mouseY, float delta);
-
-        /**
-         * Updates the child elements of the list by calling 'onMouseClicked'.
-         */
-        void updateChildElementsClickedState(double mouseX, double mouseY, int button);
 
         /**
          * Gets the button at the specified mouse position and obtains its description.
@@ -175,5 +200,34 @@ public class ModConfigScreen extends Screen {
          * for the {@link IConfigOptionListWidget#NONE} implementation.
          */
         OptionalInt bottom();
+    }
+
+    protected static class UnsavedConfig implements ConfigAccess {
+        protected final ConfigAccess delegateConfig;
+        protected final Map<ConfigOption<?>, @Nullable Object> changes;
+
+        protected UnsavedConfig(ConfigAccess delegateConfig) {
+            this.delegateConfig = delegateConfig;
+            this.changes = new HashMap<>();
+        }
+
+        @Override
+        public <V> void put(ConfigOption<V> option, @Nullable V value) {
+            this.changes.put(option, value);
+        }
+
+        @Override
+        public <V> Optional<V> get(ConfigOption<V> option) {
+            return changes.containsKey(option) ? Optional.ofNullable(option.type().cast(changes.get(option))) : delegateConfig.get(option);
+        }
+
+        protected boolean changed(ConfigOption<?> option) {
+            return changes.containsKey(option) && !Objects.equals(changes.get(option), delegateConfig.get(option).orElse(null));
+        }
+
+        @SuppressWarnings("unchecked")
+        protected void saveChanges() {
+            changes.forEach((option, value) -> delegateConfig.put((ConfigOption<Object>) option, value));
+        }
     }
 }

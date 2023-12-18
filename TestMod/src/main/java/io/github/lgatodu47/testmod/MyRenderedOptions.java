@@ -2,6 +2,7 @@ package io.github.lgatodu47.testmod;
 
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
+import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionBuilder;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.util.DyeColor;
@@ -20,10 +21,15 @@ public class MyRenderedOptions {
             BUILDER.ofDouble(MyConfigOptions.DOUBLE_OPTION).setCommonTranslationKey("double_option").build();
             BUILDER.ofString(MyConfigOptions.STRING_OPTION, false).setCommonTranslationKey("string_option").build();
             BUILDER.ofEnum(MyConfigOptions.COLOR_OPTION, DyeColor.class).setCommonTranslationKey("enum_option").build();
+
+            BUILDER.withCategoryTranslationKey("numbers", "numbers")
+                    .withCategoryTranslationKey("numbers/ints", "integers")
+                    .withCategoryTranslationKey("numbers/doubles", "doubles")
+                    .withCategoryTranslationKey("custom", "idk");
         }
 
-        public static List<RenderedConfigOption<?>> options() {
-            return BUILDER.optionsToRender();
+        public static RenderedConfigOptionAccess access() {
+            return BUILDER;
         }
     }
 
@@ -40,8 +46,8 @@ public class MyRenderedOptions {
             return null;
         }
 
-        public static List<RenderedConfigOption<?>> options() {
-            return BUILDER.optionsToRender();
+        public static RenderedConfigOptionAccess access() {
+            return BUILDER;
         }
     }
 }

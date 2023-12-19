@@ -20,7 +20,7 @@ repositories {
 
 dependencies {
     [...]
-    def catConfigMCDependency = "io.github.lgatodu47:catconfig-mc:${mc_version}-0.2.0"
+    def catConfigMCDependency = "io.github.lgatodu47:catconfig-mc:${mc_version}-0.2.1"
     modImplementation catConfigMCDependency
     include catConfigMCDependency
 }

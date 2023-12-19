@@ -10,7 +10,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
 import net.minecraft.client.render.RenderLayer;
@@ -82,7 +81,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         int rowLeft = this.getRowLeft();
         int hearderHeight = this.top + 4 - (int)this.getScrollAmount();
 
-        renderBackground(context);
         enableScissor(context);
         renderHeader(context, rowLeft, hearderHeight);
         renderList(context, mouseX, mouseY, delta);
@@ -106,13 +104,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         renderDecorations(context, mouseX, mouseY);
         RenderSystem.disableBlend();
     }
-
-    private void renderBackground(DrawContext context) {
-        context.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
-        context.drawTexture(Screen.OPTIONS_BACKGROUND_TEXTURE, this.left, this.top, (float)this.right, (float)(this.bottom + (int)this.getScrollAmount()), this.right - this.left, this.bottom - this.top, 32, 32);
-        context.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-    }
-
 
     @Override
     protected void renderList(DrawContext context, int mouseX, int mouseY, float delta) {

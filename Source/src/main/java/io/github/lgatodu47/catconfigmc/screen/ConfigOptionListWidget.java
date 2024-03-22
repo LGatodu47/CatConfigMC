@@ -27,12 +27,20 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEntry<E>> extends ElementListWidget<E> implements ModConfigScreen.IConfigOptionListWidget {
+    private final int bottom;
+
     public ConfigOptionListWidget(MinecraftClient client, int width, int height, int top, int bottom) {
-        super(client, width, height, top, bottom, 36);
+        super(client, width, height, top, 36);
+        this.bottom = bottom;
     }
 
     @Override
     public void tick() {
+    }
+
+    @Override
+    public int getBottom() {
+        return bottom;
     }
 
     @Override
@@ -57,13 +65,13 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     @Override
     protected void centerScrollOn(E entry) {
-        setScrollAmount(getRowYOffset(children().indexOf(entry)) + entry.entryHeight() / 2. - (this.bottom - this.top) / 2.);
+        setScrollAmount(getRowYOffset(children().indexOf(entry)) + entry.entryHeight() / 2. - (this.bottom - this.getY()) / 2.);
     }
 
     @Override
     protected void ensureVisible(E entry) {
         int rowTop = getRowTop(children().indexOf(entry));
-        int topOffset = rowTop - this.top - 4 - entry.entryHeight();
+        int topOffset = rowTop - this.getY() - 4 - entry.entryHeight();
         if (topOffset < 0) {
             setScrollAmount(getScrollAmount() + topOffset);
         }
@@ -75,11 +83,13 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
         int scrollbarPositionX = this.getScrollbarPositionX();
         int scrollBarWidth = scrollbarPositionX + 6;
         int rowLeft = this.getRowLeft();
-        int hearderHeight = this.top + 4 - (int)this.getScrollAmount();
+        int hearderHeight = this.getY() + 4 - (int)this.getScrollAmount();
+
+        context.fill(getX(), getY(), getRight(), getBottom(), 0x4D000000);
 
         enableScissor(context);
         renderHeader(context, rowLeft, hearderHeight);
@@ -89,14 +99,14 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
         int maxScroll = this.getMaxScroll();
         if (maxScroll > 0) {
-            int scrollbarHeight = (int) ((float) ((this.bottom - this.top) * (this.bottom - this.top)) / (float) this.getMaxPosition());
-            scrollbarHeight = MathHelper.clamp(scrollbarHeight, 32, this.bottom - this.top - 8);
-            int scrollY = (int)this.getScrollAmount() * (this.bottom - this.top - scrollbarHeight) / maxScroll + this.top;
-            if (scrollY < this.top) {
-                scrollY = this.top;
+            int scrollbarHeight = (int) ((float) ((this.bottom - this.getY()) * (this.bottom - this.getY())) / (float) this.getMaxPosition());
+            scrollbarHeight = MathHelper.clamp(scrollbarHeight, 32, this.bottom - this.getY() - 8);
+            int scrollY = (int)this.getScrollAmount() * (this.bottom - this.getY() - scrollbarHeight) / maxScroll + this.getY();
+            if (scrollY < this.getY()) {
+                scrollY = this.getY();
             }
 
-            context.fill(scrollbarPositionX, this.top, scrollBarWidth, this.bottom, -16777216);
+            context.fill(scrollbarPositionX, this.getY(), scrollBarWidth, this.bottom, -16777216);
             context.fill(scrollbarPositionX, scrollY, scrollBarWidth, scrollY + scrollbarHeight, -8355712);
             context.fill(scrollbarPositionX, scrollY, scrollBarWidth - 1, scrollY + scrollbarHeight - 1, -4144960);
         }
@@ -115,20 +125,20 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             int rowTop = getRowTop(i);
             int rowBottom = getRowBottom(i);
 
-            if (rowBottom >= this.top && rowTop <= this.bottom) {
+            if (rowBottom >= this.getY() && rowTop <= this.bottom) {
                 renderEntry(context, mouseX, mouseY, delta, i, rowLeft, rowTop, rowWidth, getRowHeight(i));
             }
         }
     }
 
     public void renderHorizontalShadows(DrawContext context) {
-        context.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.top, this.right, this.top + 4, -16777216, 0, 0);
-        context.fillGradient(RenderLayer.getGuiOverlay(), this.left, this.bottom - 4, this.right, this.bottom, 0, -16777216, 0);
+        context.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getRight(), this.getY() + 4, -16777216, 0, 0);
+        context.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.bottom - 4, this.getRight(), this.bottom, 0, -16777216, 0);
     }
 
     @Override
     protected int getRowTop(int index) {
-        return this.top + 4 - (int) getScrollAmount() + getRowYOffset(index) + this.headerHeight;
+        return this.getY() + 4 - (int) getScrollAmount() + getRowYOffset(index) + this.headerHeight;
     }
 
     @Override
@@ -203,7 +213,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     @Override
     public Optional<Text> getHoveredButtonDescription(double mouseX, double mouseY) {
-        if(mouseX > this.left && mouseX < this.left + this.width && mouseY > this.top && mouseY < this.top + height) {
+        if(mouseX > this.getX() && mouseX < this.getX() + this.width && mouseY > this.getY() && mouseY < this.getY() + height) {
             for (AbstractEntry<?> entry : this.children()) {
                 Optional<Text> desc = entry.getHoveringDescription(mouseX, mouseY);
                 if(desc.isPresent()) {

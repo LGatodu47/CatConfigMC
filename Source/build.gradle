@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '0.12-SNAPSHOT'
+    id 'fabric-loom' version '1.5-SNAPSHOT'
     id 'maven-publish'
     id 'idea'
     id 'signing'
@@ -15,10 +15,10 @@ dependencies {
             .filter(d -> d.group == "io.github.lgatodu47" && d.name == "catconfig")
     .forEach(d -> include d)
     // fabric's mixin fork
-    api("net.fabricmc:sponge-mixin:${mixin_version}") {
-        exclude module: 'launchwrapper'
-        exclude module: 'guava'
-    }
+//    api("net.fabricmc:sponge-mixin:${mixin_version}") {
+//        exclude module: 'launchwrapper'
+//        exclude module: 'guava'
+//    }
 }
 
 loom {

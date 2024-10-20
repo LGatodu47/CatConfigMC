@@ -54,7 +54,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected int getScrollbarPositionX() {
+    protected int getScrollbarX() {
         return this.width - 6;
     }
 
@@ -84,7 +84,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        int scrollbarPositionX = this.getScrollbarPositionX();
+        int scrollbarPositionX = this.getScrollbarX();
         int scrollBarWidth = scrollbarPositionX + 6;
         int rowLeft = this.getRowLeft();
         int hearderHeight = this.getY() + 4 - (int)this.getScrollAmount();

@@ -29,7 +29,6 @@ public class ModConfigScreen extends Screen {
     @NotNull
     protected IConfigOptionListWidget list = IConfigOptionListWidget.NONE;
     protected ConfigListener listeners = () -> {};
-    protected Identifier backgroundTexture = OPTIONS_BACKGROUND_TEXTURE;
 
     public ModConfigScreen(Text title, Screen parent, CatConfig config, RenderedConfigOptionAccess renderedOptions) {
         super(title);
@@ -42,11 +41,6 @@ public class ModConfigScreen extends Screen {
     // NOTE: this method removes all previous listeners.
     public ModConfigScreen withListeners(ConfigListener... listeners) {
         this.listeners = ConfigListener.combine(listeners);
-        return this;
-    }
-
-    public ModConfigScreen withBackgroundTexture(Identifier texture) {
-        this.backgroundTexture = texture;
         return this;
     }
 
@@ -76,7 +70,7 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(context);
+        renderPanoramaBackground(context, delta);
         list.render(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
@@ -93,30 +87,19 @@ public class ModConfigScreen extends Screen {
      */
     protected void renderAboveList(int listBottom) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuffer();
         RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
-        RenderSystem.setShaderTexture(0, this.backgroundTexture);
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
-        builder.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        builder.vertex(0.0, this.height, 1).texture(0.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255).next();
-        builder.vertex(this.width, this.height, 1).texture((float) this.width / 32.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255).next();
-        builder.vertex(this.width, listBottom, 1).texture((float) this.width / 32.0f, 0).color(64, 64, 64, 255).next();
-        builder.vertex(0.0, listBottom, 1).texture(0.0f, 0).color(64, 64, 64, 255).next();
-
-        tessellator.draw();
+        BufferBuilder builder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
+        builder.vertex(0.0f, this.height, 1).texture(0.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255);
+        builder.vertex(this.width, this.height, 1).texture((float) this.width / 32.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255);
+        builder.vertex(this.width, listBottom, 1).texture((float) this.width / 32.0f, 0).color(64, 64, 64, 255);
+        builder.vertex(0.0f, listBottom, 1).texture(0.0f, 0).color(64, 64, 64, 255);
     }
 
     protected void saveAndClose() {
         this.unsavedConfig.saveChanges();
         close();
-    }
-
-    @Override
-    public void renderBackgroundTexture(DrawContext context) {
-        context.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
-        context.drawTexture(this.backgroundTexture, 0, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32);
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override

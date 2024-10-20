@@ -70,7 +70,7 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderPanoramaBackground(context, delta);
+        renderBackground(context, mouseX, mouseY, delta);
         list.render(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);

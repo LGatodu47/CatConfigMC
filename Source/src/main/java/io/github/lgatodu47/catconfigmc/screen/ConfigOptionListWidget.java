@@ -12,7 +12,6 @@ import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.ElementListWidget;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Util;
@@ -54,7 +53,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected int getScrollbarPositionX() {
+    protected int getScrollbarX() {
         return this.width - 6;
     }
 
@@ -84,7 +83,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     @Override
     public void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
-        int scrollbarPositionX = this.getScrollbarPositionX();
+        int scrollbarPositionX = this.getScrollbarX();
         int scrollBarWidth = scrollbarPositionX + 6;
         int rowLeft = this.getRowLeft();
         int hearderHeight = this.getY() + 4 - (int)this.getScrollAmount();
@@ -95,7 +94,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         renderHeader(context, rowLeft, hearderHeight);
         renderList(context, mouseX, mouseY, delta);
         context.disableScissor();
-        renderHorizontalShadows(context);
+        drawHeaderAndFooterSeparators(context);
 
         int maxScroll = this.getMaxScroll();
         if (maxScroll > 0) {
@@ -129,11 +128,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
                 renderEntry(context, mouseX, mouseY, delta, i, rowLeft, rowTop, rowWidth, getRowHeight(i));
             }
         }
-    }
-
-    public void renderHorizontalShadows(DrawContext context) {
-        context.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.getY(), this.getRight(), this.getY() + 4, -16777216, 0, 0);
-        context.fillGradient(RenderLayer.getGuiOverlay(), this.getX(), this.bottom - 4, this.getRight(), this.bottom, 0, -16777216, 0);
     }
 
     @Override

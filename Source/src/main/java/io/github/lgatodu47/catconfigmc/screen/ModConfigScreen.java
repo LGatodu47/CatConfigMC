@@ -29,6 +29,8 @@ public class ModConfigScreen extends Screen {
     @NotNull
     protected IConfigOptionListWidget list = IConfigOptionListWidget.NONE;
     protected ConfigListener listeners = () -> {};
+    @Nullable
+    protected Identifier backgroundTexture;
 
     public ModConfigScreen(Text title, Screen parent, CatConfig config, RenderedConfigOptionAccess renderedOptions) {
         super(title);
@@ -41,6 +43,11 @@ public class ModConfigScreen extends Screen {
     // NOTE: this method removes all previous listeners.
     public ModConfigScreen withListeners(ConfigListener... listeners) {
         this.listeners = ConfigListener.combine(listeners);
+        return this;
+    }
+
+    public ModConfigScreen withBackgroundTexture(Identifier texture) {
+        this.backgroundTexture = texture;
         return this;
     }
 
@@ -70,7 +77,7 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackground(context, mouseX, mouseY, delta);
+        renderBackgroundTexture(context, mouseX, mouseY, delta);
         list.render(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
@@ -100,6 +107,16 @@ public class ModConfigScreen extends Screen {
     protected void saveAndClose() {
         this.unsavedConfig.saveChanges();
         close();
+    }
+
+    public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
+        if(backgroundTexture == null) {
+            renderBackground(context, mouseX, mouseY, delta);
+            return;
+        }
+        context.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
+        context.drawTexture(this.backgroundTexture, 0, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32);
+        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
     }
 
     @Override

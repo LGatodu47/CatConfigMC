@@ -9,7 +9,7 @@ version '0'
 repositories {
     maven {
         name "Mod Menu Maven Repo"
-        url "https://maven.terraformersmc.com/releases"
+        url "https://maven.terraformersmc.com/"
     }
 }
 

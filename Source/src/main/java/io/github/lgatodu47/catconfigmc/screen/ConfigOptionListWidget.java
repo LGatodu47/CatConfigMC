@@ -58,13 +58,13 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected int getMaxPosition() {
+    protected int getContentsHeightWithPadding() {
         return getRowYOffset(getEntryCount()) + this.headerHeight;
     }
 
     @Override
     protected void centerScrollOn(E entry) {
-        setScrollAmount(getRowYOffset(children().indexOf(entry)) + entry.entryHeight() / 2. - (this.bottom - this.getY()) / 2.);
+        setScrollY(getRowYOffset(children().indexOf(entry)) + entry.entryHeight() / 2. - (this.bottom - this.getY()) / 2.);
     }
 
     @Override
@@ -72,12 +72,12 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         int rowTop = getRowTop(children().indexOf(entry));
         int topOffset = rowTop - this.getY() - 4 - entry.entryHeight();
         if (topOffset < 0) {
-            setScrollAmount(getScrollAmount() + topOffset);
+            setScrollY(getScrollY() + topOffset);
         }
 
         int bottomOffset = this.bottom - rowTop - 2 * entry.entryHeight();
         if (bottomOffset < 0) {
-            setScrollAmount(getScrollAmount() - bottomOffset);
+            setScrollY(getScrollY() - bottomOffset);
         }
     }
 
@@ -86,7 +86,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         int scrollbarPositionX = this.getScrollbarX();
         int scrollBarWidth = scrollbarPositionX + 6;
         int rowLeft = this.getRowLeft();
-        int hearderHeight = this.getY() + 4 - (int)this.getScrollAmount();
+        int hearderHeight = this.getY() + 4 - (int)this.getScrollY();
 
         context.fill(getX(), getY(), getRight(), getBottom(), 0x4D000000);
 
@@ -96,11 +96,11 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         context.disableScissor();
         drawHeaderAndFooterSeparators(context);
 
-        int maxScroll = this.getMaxScroll();
+        int maxScroll = this.getMaxScrollY();
         if (maxScroll > 0) {
-            int scrollbarHeight = (int) ((float) ((this.bottom - this.getY()) * (this.bottom - this.getY())) / (float) this.getMaxPosition());
+            int scrollbarHeight = (int) ((float) ((this.bottom - this.getY()) * (this.bottom - this.getY())) / (float) this.getContentsHeightWithPadding());
             scrollbarHeight = MathHelper.clamp(scrollbarHeight, 32, this.bottom - this.getY() - 8);
-            int scrollY = (int)this.getScrollAmount() * (this.bottom - this.getY() - scrollbarHeight) / maxScroll + this.getY();
+            int scrollY = (int)this.getScrollY() * (this.bottom - this.getY() - scrollbarHeight) / maxScroll + this.getY();
             if (scrollY < this.getY()) {
                 scrollY = this.getY();
             }
@@ -132,7 +132,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
 
     @Override
     public int getRowTop(int index) {
-        return this.getY() + 4 - (int) getScrollAmount() + getRowYOffset(index) + this.headerHeight;
+        return this.getY() + 4 - (int) getScrollY() + getRowYOffset(index) + this.headerHeight;
     }
 
     @Override

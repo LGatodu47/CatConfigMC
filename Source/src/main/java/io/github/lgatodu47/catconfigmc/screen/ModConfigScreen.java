@@ -5,6 +5,7 @@ import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
+import net.minecraft.client.gl.ShaderProgramKeys;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -14,6 +15,7 @@ import net.minecraft.client.render.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.ColorHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,7 +96,7 @@ public class ModConfigScreen extends Screen {
      */
     protected void renderAboveList(int listBottom) {
         Tessellator tessellator = Tessellator.getInstance();
-        RenderSystem.setShader(GameRenderer::getPositionTexColorProgram);
+        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
         RenderSystem.setShaderColor(1, 1, 1, 1);
 
         BufferBuilder builder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
@@ -114,9 +116,7 @@ public class ModConfigScreen extends Screen {
             renderBackground(context, mouseX, mouseY, delta);
             return;
         }
-        context.setShaderColor(0.25f, 0.25f, 0.25f, 1.0f);
-        context.drawTexture(this.backgroundTexture, 0, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32);
-        context.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+        context.drawTexture(RenderLayer::getGuiTextured, this.backgroundTexture, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32, ColorHelper.fromFloats(0.25f, 0.25f, 0.25f, 1.0f));
     }
 
     @Override

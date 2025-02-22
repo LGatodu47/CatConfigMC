@@ -131,12 +131,12 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected int getRowTop(int index) {
+    public int getRowTop(int index) {
         return this.getY() + 4 - (int) getScrollAmount() + getRowYOffset(index) + this.headerHeight;
     }
 
     @Override
-    protected int getRowBottom(int index) {
+    public int getRowBottom(int index) {
         return getRowTop(index) + getRowHeight(index);
     }
 
@@ -303,7 +303,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
                     hoveredTime = Math.max(0, hoveredTime - 0.1F);
                 }
             }
-            context.fill(x, y, x + entryWidth, y + entryHeight, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
+            context.fill(x, y, x + entryWidth, y + entryHeight, ColorHelper.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
             context.drawTextWithShadow(client.textRenderer, option.displayName().copy().styled(style -> style.withItalic(changed.getAsBoolean())), x + spacing, y + (entryHeight - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
             widget.setX(x + entryWidth - spacing - widget.getWidth());
@@ -397,7 +397,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
                     hoveredTime = Math.max(0, hoveredTime - 0.1F);
                 }
             }
-            context.fill(x, y, x + entryWidth, y + 36, ColorHelper.Argb.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
+            context.fill(x, y, x + entryWidth, y + 36, ColorHelper.getArgb((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
             context.drawTextWithShadow(client.textRenderer, categoryName.copy().formatted(Formatting.YELLOW), x + spacing, y + (36 - client.textRenderer.fontHeight) / 2, 0xFFFFFF);
 

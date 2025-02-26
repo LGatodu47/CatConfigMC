@@ -1,0 +1,6 @@
+{
+  "screen.catconfigmc.config_selection_screen": "Выберите сторону настройки...",
+
+  "button.catconfigmc.config.discard_changes": "Отменить изменения",
+  "button.catconfigmc.config.save_changes": "Сохранить изменения"
+}

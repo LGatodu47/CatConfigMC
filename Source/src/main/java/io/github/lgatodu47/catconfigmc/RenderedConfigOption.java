@@ -2,8 +2,8 @@ package io.github.lgatodu47.catconfigmc;
 
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -24,12 +24,12 @@ public interface RenderedConfigOption<V> {
     /**
      * @return A Minecraft Text Component that holds the display name of the ConfigOption.
      */
-    Text displayName();
+    Component displayName();
 
     /**
      * @return A Minecraft Text Component that holds the description of the ConfigOption.
      */
-    Text description();
+    Component description();
 
     /**
      * A method that handles the creation for a new widget which will represent the value of the ConfigOption.
@@ -41,5 +41,5 @@ public interface RenderedConfigOption<V> {
      * @see BuiltinWidgets BuiltinWidgets and its use in RenderedConfigOptionBuilder.
      */
     @Nullable
-    ClickableWidget createWidget(ConfigAccess config);
+    AbstractWidget createWidget(ConfigAccess config);
 }

@@ -3,8 +3,8 @@ package io.github.lgatodu47.catconfigmc;
 import com.google.common.collect.ImmutableList;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,14 +23,14 @@ import static io.github.lgatodu47.catconfigmc.BuiltinWidgets.*;
  */
 public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
     private final List<RenderedConfigOption<?>> options;
-    private final Map<String, Text> categoryNames;
-    private final Map<String, Text> categoryDescriptions;
+    private final Map<String, Component> categoryNames;
+    private final Map<String, Component> categoryDescriptions;
 
     public RenderedConfigOptionBuilder() {
         this(new ArrayList<>(), new HashMap<>(), new HashMap<>());
     }
 
-    public RenderedConfigOptionBuilder(@NotNull List<RenderedConfigOption<?>> list, @NotNull Map<String, Text> categoryNames, @NotNull Map<String, Text> categoryDescriptions) {
+    public RenderedConfigOptionBuilder(@NotNull List<RenderedConfigOption<?>> list, @NotNull Map<String, Component> categoryNames, @NotNull Map<String, Component> categoryDescriptions) {
         list.clear();
         categoryNames.clear();
         categoryDescriptions.clear();
@@ -119,7 +119,7 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
      * @return this
      */
     public RenderedConfigOptionBuilder withCategoryTranslationKey(String categoryPath, String key) {
-        return withCategoryName(categoryPath, Text.translatable(key)).withCategoryDescription(categoryPath, Text.translatable(key.concat(".desc")));
+        return withCategoryName(categoryPath, Component.translatable(key)).withCategoryDescription(categoryPath, Component.translatable(key.concat(".desc")));
     }
 
     /**
@@ -128,7 +128,7 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
      * @param text The display Text to assign.
      * @return this
      */
-    public RenderedConfigOptionBuilder withCategoryName(String categoryPath, Text text) {
+    public RenderedConfigOptionBuilder withCategoryName(String categoryPath, Component text) {
         this.categoryNames.put(ConfigOption.correctCategoryPath(categoryPath), text);
         return this;
     }
@@ -139,7 +139,7 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
      * @param description The display description to assign.
      * @return this
      */
-    public RenderedConfigOptionBuilder withCategoryDescription(String categoryPath, Text description) {
+    public RenderedConfigOptionBuilder withCategoryDescription(String categoryPath, Component description) {
         this.categoryDescriptions.put(ConfigOption.correctCategoryPath(categoryPath), description);
         return this;
     }
@@ -150,13 +150,13 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
     }
 
     @Override
-    public Text getNameForCategory(String categoryPath, Supplier<Text> fallback) {
-        Text name = categoryNames.get(ConfigOption.correctCategoryPath(categoryPath));
+    public Component getNameForCategory(String categoryPath, Supplier<Component> fallback) {
+        Component name = categoryNames.get(ConfigOption.correctCategoryPath(categoryPath));
         return name == null ? fallback.get() : name;
     }
 
     @Override
-    public @Nullable Text getDescriptionForCategory(String categoryPath) {
+    public @Nullable Component getDescriptionForCategory(String categoryPath) {
         return categoryDescriptions.get(ConfigOption.correctCategoryPath(categoryPath));
     }
 
@@ -167,8 +167,8 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
     public static final class BuildingRenderedConfigOption<V> {
         private final ConfigOption<V> option;
         private final Consumer<RenderedConfigOption<?>> appender;
-        private Text name, description;
-        private Function<ConfigAccess, ClickableWidget> widgetFactory;
+        private Component name, description;
+        private Function<ConfigAccess, AbstractWidget> widgetFactory;
 
         private BuildingRenderedConfigOption(ConfigOption<V> option, Consumer<RenderedConfigOption<?>> appender) {
             this.option = option;
@@ -182,20 +182,20 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
          * @return this
          */
         public BuildingRenderedConfigOption<V> setCommonTranslationKey(@NotNull String translationKey) {
-            return setName(Text.translatable(translationKey)).setDescription(Text.translatable(translationKey.concat(".desc")));
+            return setName(Component.translatable(translationKey)).setDescription(Component.translatable(translationKey.concat(".desc")));
         }
 
-        public BuildingRenderedConfigOption<V> setName(Text name) {
+        public BuildingRenderedConfigOption<V> setName(Component name) {
             this.name = name;
             return this;
         }
 
-        public BuildingRenderedConfigOption<V> setDescription(Text description) {
+        public BuildingRenderedConfigOption<V> setDescription(Component description) {
             this.description = description;
             return this;
         }
 
-        public BuildingRenderedConfigOption<V> setWidgetFactory(Function<ConfigAccess, ClickableWidget> widgetFactory) {
+        public BuildingRenderedConfigOption<V> setWidgetFactory(Function<ConfigAccess, AbstractWidget> widgetFactory) {
             this.widgetFactory = widgetFactory;
             return this;
         }
@@ -205,16 +205,16 @@ public class RenderedConfigOptionBuilder implements RenderedConfigOptionAccess {
          */
         public RenderedConfigOption<V> build() {
             RenderedConfigOption<V> opt = new RenderedConfigOptionImpl<>(this.option,
-                    name == null ? Text.literal(option.name()) : name,
-                    description == null ? Text.empty() : description,
+                    name == null ? Component.literal(option.name()) : name,
+                    description == null ? Component.empty() : description,
                     widgetFactory == null ? w -> null : widgetFactory);
             appender.accept(opt);
             return opt;
         }
 
-        private record RenderedConfigOptionImpl<V>(ConfigOption<V> option, Text displayName, Text description, Function<ConfigAccess, ClickableWidget> widgetMaker) implements RenderedConfigOption<V> {
+        private record RenderedConfigOptionImpl<V>(ConfigOption<V> option, Component displayName, Component description, Function<ConfigAccess, AbstractWidget> widgetMaker) implements RenderedConfigOption<V> {
             @Override
-            public @Nullable ClickableWidget createWidget(ConfigAccess config) {
+            public @Nullable AbstractWidget createWidget(ConfigAccess config) {
                 return widgetMaker().apply(config);
             }
         }

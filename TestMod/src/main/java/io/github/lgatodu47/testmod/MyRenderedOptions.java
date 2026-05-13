@@ -3,8 +3,8 @@ package io.github.lgatodu47.testmod;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionBuilder;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.util.DyeColor;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.world.item.DyeColor;
 
 public class MyRenderedOptions {
     public static final class Client {
@@ -39,7 +39,7 @@ public class MyRenderedOptions {
             BUILDER.ofInt(MyConfigOptions.SMOL_INT).setCommonTranslationKey("smol_int").build();
         }
 
-        private static ClickableWidget makeUserInfoWidget(ConfigAccess config) {
+        private static AbstractWidget makeUserInfoWidget(ConfigAccess config) {
             return null;
         }
 

@@ -1,12 +1,12 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
 import io.github.lgatodu47.catconfig.ConfigSide;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.screen.ScreenTexts;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +25,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     protected int maxRowAmount = 3;
     protected boolean isParentScreen = false;
 
-    protected ConfigSideSelectionScreen(Text title, Screen previous, Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories) {
+    protected ConfigSideSelectionScreen(Component title, Screen previous, Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories) {
         super(title);
         this.previous = previous;
         this.screenFactories = screenFactories;
@@ -51,7 +51,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     protected void init() {
         if(screenFactories.isEmpty()) {
             LogManager.getLogger().warn("A mod is initializing 'ConfigSideSelectionScreen' without defining first the ConfigScreenFactories! If you can determine the mod that causes this message to be logged please report it to the mod author!");
-            close();
+            onClose();
         }
 
         // pixels between buttons and screen borders
@@ -61,7 +61,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
         // number of entries per row
         final int entriesPerRow = Math.min(this.entriesPerRow, entryCount);
         // number of rows
-        final int rowAmount = Math.min(this.maxRowAmount, MathHelper.ceil((float) entryCount / entriesPerRow));
+        final int rowAmount = Math.min(this.maxRowAmount, Mth.ceil((float) entryCount / entriesPerRow));
 
         final int maxBtnWidth = 150;
         // total free space for buttons (without taking into account the spacing)
@@ -83,8 +83,8 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
             int x = startX + rowIndex * (btnWidth + spacing);
             int y = startY + columnIndex * (btnHeight + spacing);
-            addDrawableChild(ButtonWidget.builder(getNameForSide(entry.getKey()), button -> this.client.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous)))
-                    .dimensions(x, y, btnWidth, btnHeight)
+            addRenderableWidget(Button.builder(getNameForSide(entry.getKey()), button -> this.minecraft.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous)))
+                    .bounds(x, y, btnWidth, btnHeight)
                     .build());
 
             if(++rowIndex == entriesPerRow) {
@@ -93,29 +93,29 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
             }
         }
 
-        addDrawableChild(ButtonWidget.builder(ScreenTexts.BACK, button -> close())
-                .position((width - 200) / 2, this.height - spacing - 20)
+        addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, button -> onClose())
+                .pos((width - 200) / 2, this.height - spacing - 20)
                 .width(200)
                 .build());
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
+        context.drawCenteredString(font, title, this.width / 2, 8, 0xFFFFFF);
     }
 
     @Override
-    public void close() {
-        this.client.setScreen(this.previous);
+    public void onClose() {
+        this.minecraft.setScreen(this.previous);
     }
 
     /**
      * @param side The config side.
      * @return A Text object of the config side's name.
      */
-    protected Text getNameForSide(ConfigSide side) {
-        return Text.of(StringUtils.capitalize(side.sideName()));
+    protected Component getNameForSide(ConfigSide side) {
+        return Component.nullToEmpty(StringUtils.capitalize(side.sideName()));
     }
 
     /**
@@ -130,8 +130,8 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * Builder with no dynamic language support.
      * @return a Builder instance with a preset title.
      */
-    public static ConfigSideSelectionScreen.Builder create() {
-        return create(Text.translatable("screen.catconfigmc.config_selection_screen"));
+    public static Builder create() {
+        return create(Component.translatable("screen.catconfigmc.config_selection_screen"));
     }
 
     /**
@@ -139,7 +139,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
      * @param title The title of the screen that will be built.
      * @return A new Builder.
      */
-    public static ConfigSideSelectionScreen.Builder create(Text title) {
+    public static Builder create(Component title) {
         return new Builder(title);
     }
 
@@ -153,12 +153,12 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     }
 
     public static class Builder {
-        private final Text title;
+        private final Component title;
         protected final Map<ConfigSide, @NotNull ConfigScreenFactory> screenFactories = new HashMap<>();
         protected boolean isParentScreen = false;
         protected int entriesPerRow = 3, maxRowAmount = 3;
 
-        Builder(Text title) {
+        Builder(Component title) {
             this.title = title;
         }
 

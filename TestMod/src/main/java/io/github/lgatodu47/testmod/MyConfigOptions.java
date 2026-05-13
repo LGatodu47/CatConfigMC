@@ -4,7 +4,7 @@ import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfig.ConfigOptionAccess;
 import io.github.lgatodu47.catconfig.ConfigOptionBuilder;
 import io.github.lgatodu47.catconfigmc.MinecraftConfigSides;
-import net.minecraft.util.DyeColor;
+import net.minecraft.world.item.DyeColor;
 
 import java.util.UUID;
 

@@ -1,6 +1,6 @@
 package io.github.lgatodu47.catconfigmc;
 
-import net.minecraft.text.Text;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -18,7 +18,7 @@ public interface RenderedConfigOptionAccess {
      * @param fallback A fallback value in case no name was directly assigned to the category.
      * @return A Text component representing the display name of the category.
      */
-    Text getNameForCategory(String categoryPath, Supplier<Text> fallback);
+    Component getNameForCategory(String categoryPath, Supplier<Component> fallback);
 
     /**
      * Obtains the display description for a given category.
@@ -27,5 +27,5 @@ public interface RenderedConfigOptionAccess {
      * {@code null} if no description was assigned to the given category
      */
     @Nullable
-    Text getDescriptionForCategory(String categoryPath);
+    Component getDescriptionForCategory(String categoryPath);
 }

@@ -3,14 +3,14 @@ package io.github.lgatodu47.catconfigmc;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfig.NumberOption;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.ClickableWidget;
-import net.minecraft.client.gui.widget.CyclingButtonWidget;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.components.CycleButton;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.Mth;
 import org.apache.commons.lang3.function.FailableFunction;
 
 import java.text.DecimalFormat;
@@ -27,24 +27,24 @@ final class BuiltinWidgets {
     // The maximum number of digits a long value can have.
     private static final int LONG_MAX_DIGITS = Long.toString(Long.MAX_VALUE).length();
 
-    static ClickableWidget createBoolWidget(ConfigAccess config, ConfigOption<Boolean> option) {
-        return new ButtonWidget(0, 0, 100, 20, Text.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false)), Supplier::get) {
+    static AbstractWidget createBoolWidget(ConfigAccess config, ConfigOption<Boolean> option) {
+        return new Button.Plain(0, 0, 100, 20, Component.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false)), Supplier::get) {
             @Override
-            public Text getMessage() {
-                return config.get(option).map(Object::toString).map(Text::of).orElseGet(super::getMessage);
+            public net.minecraft.network.chat.Component getMessage() {
+                return config.get(option).map(Object::toString).map(net.minecraft.network.chat.Component::nullToEmpty).orElseGet(super::getMessage);
             }
         };
     }
 
-    static ClickableWidget createIntWidget(ConfigAccess config, ConfigOption<Integer> option) {
+    static AbstractWidget createIntWidget(ConfigAccess config, ConfigOption<Integer> option) {
         int space = getSpaceForIntOption(option);
-        TextFieldWidget widget = createNumberWidget(config, option, MathHelper.clamp(space * 10, 20, 100), String::valueOf, Integer::parseInt, Math::min, Math::max, false);
+        EditBox widget = createNumberWidget(config, option, Mth.clamp(space * 10, 20, 100), String::valueOf, Integer::parseInt, Math::min, Math::max, false);
         widget.setMaxLength(space);
         return widget;
     }
 
-    static ClickableWidget createLongWidget(ConfigAccess config, ConfigOption<Long> option) {
-        TextFieldWidget widget = createNumberWidget(config, option, 100, String::valueOf, Long::parseLong, Math::min, Math::max, false);
+    static AbstractWidget createLongWidget(ConfigAccess config, ConfigOption<Long> option) {
+        EditBox widget = createNumberWidget(config, option, 100, String::valueOf, Long::parseLong, Math::min, Math::max, false);
         widget.setMaxLength(LONG_MAX_DIGITS + 1);
         return widget;
     }
@@ -56,26 +56,29 @@ final class BuiltinWidgets {
         format.setDecimalFormatSymbols(symbols);
     });
 
-    static ClickableWidget createDoubleWidget(ConfigAccess config, ConfigOption<Double> option) {
-        TextFieldWidget widget = createNumberWidget(config, option, 100, FORMAT::format, Double::parseDouble, Math::min, Math::max, true);
+    static AbstractWidget createDoubleWidget(ConfigAccess config, ConfigOption<Double> option) {
+        EditBox widget = createNumberWidget(config, option, 100, FORMAT::format, Double::parseDouble, Math::min, Math::max, true);
         widget.setMaxLength(64);
         return widget;
     }
 
-    static ClickableWidget createStringWidget(ConfigAccess config, ConfigOption<String> option, boolean extendedLength) {
-        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, 100, 20, Text.empty());
-        widget.setText(config.getOrFallback(option, ""));
+    static AbstractWidget createStringWidget(ConfigAccess config, ConfigOption<String> option, boolean extendedLength) {
+        EditBox widget = new EditBox(Minecraft.getInstance().font, 0, 0, 100, 20, Component.empty());
+        widget.setValue(config.getOrFallback(option, ""));
         widget.setMaxLength(extendedLength ? 256 : 64);
-        widget.setChangedListener(s -> config.put(option, s));
+        widget.setResponder(s -> config.put(option, s));
         return widget;
     }
 
-    static <E extends Enum<E>> ClickableWidget createEnumWidget(ConfigAccess config, ConfigOption<E> option, Class<E> enumClass) {
-        CyclingButtonWidget.Builder<E> builder = CyclingButtonWidget.builder(e -> Text.literal(e.toString().toUpperCase()));
-        builder.values(enumClass.getEnumConstants());
-        config.get(option).ifPresent(builder::initially);
-        builder.omitKeyText();
-        return builder.build(0, 0, 100, 20, Text.empty(), (button, value) -> config.put(option, value));
+    static <E extends Enum<E>> AbstractWidget createEnumWidget(ConfigAccess config, ConfigOption<E> option, Class<E> enumClass) {
+        if(enumClass.getEnumConstants().length == 0) {
+            throw new IllegalArgumentException("Can't create widget of an empty enum!");
+        }
+        E init = config.getOrFallback(option, enumClass.getEnumConstants()[0]);
+        CycleButton.Builder<E> builder = CycleButton.builder(e -> Component.literal(e.toString().toUpperCase()), init);
+        builder.withValues(enumClass.getEnumConstants());
+        builder.displayOnlyValue();
+        return builder.create(0, 0, 100, 20, Component.empty(), (button, value) -> config.put(option, value));
     }
 
     /**
@@ -91,10 +94,10 @@ final class BuiltinWidgets {
      * @return A TextFieldWidget that represents the given option.
      * @param <N> The type of Number of the config option.
      */
-    private static <N extends Number> TextFieldWidget createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
-        TextFieldWidget widget = new TextFieldWidget(MinecraftClient.getInstance().textRenderer, 0, 0, widgetWidth, 20, Text.empty());
-        widget.setText(config.get(option).map(toString).orElse(""));
-        widget.setTextPredicate(s -> {
+    private static <N extends Number> EditBox createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
+        EditBox widget = new EditBox(Minecraft.getInstance().font, 0, 0, widgetWidth, 20, Component.empty());
+        widget.setValue(config.get(option).map(toString).orElse(""));
+        widget.setFilter(s -> {
             if(s.isEmpty() || s.equals("-") || (acceptFloatingPoint && s.equals("."))) {
                 return true;
             }
@@ -105,7 +108,7 @@ final class BuiltinWidgets {
                 return false;
             }
         });
-        widget.setChangedListener(s -> {
+        widget.setResponder(s -> {
             if(s.isEmpty() || s.equals("-") || (acceptFloatingPoint && s.equals("."))) {
                 config.put(option, null);
                 return;
@@ -114,7 +117,7 @@ final class BuiltinWidgets {
                 final N parsed = parser.apply(s);
                 N clamped = clamped(parsed, option, minFunc, maxFunc);
                 if(!Objects.equals(parsed, clamped)) {
-                    widget.setText(toString.apply(clamped));
+                    widget.setValue(toString.apply(clamped));
                 }
                 config.put(option, clamped);
             } catch (NumberFormatException ignored) {

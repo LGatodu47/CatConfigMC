@@ -76,7 +76,7 @@ public class ModConfigScreen extends Screen {
     @Override
     protected void repositionElements() {
         layout.arrangeElements();
-        list.updateSize(this.width, this.layout);
+        list.updateWidgetSize(this.width, this.layout);
     }
 
     @Override
@@ -118,7 +118,7 @@ public class ModConfigScreen extends Screen {
             }
 
             @Override
-            public void updateSize(int width, HeaderAndFooterLayout layout) {
+            public void updateWidgetSize(int width, HeaderAndFooterLayout layout) {
             }
 
             @Override
@@ -140,7 +140,7 @@ public class ModConfigScreen extends Screen {
          */
         void tick();
 
-        void updateSize(int width, HeaderAndFooterLayout layout);
+        void updateWidgetSize(int width, HeaderAndFooterLayout layout);
     }
 
     protected static class UnsavedConfig implements ConfigAccess {

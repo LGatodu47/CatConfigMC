@@ -5,21 +5,18 @@ import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.ContainerObjectSelectionList.Entry;
-import net.minecraft.client.gui.narration.NarratableEntry.NarrationPriority;
-import net.minecraft.client.gui.narration.NarrationSupplier;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.ChatFormatting;
-import net.minecraft.util.Util;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
@@ -97,6 +94,11 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         }
 
         this.refreshScrollAmount();
+    }
+
+    @Override
+    public void updateWidgetSize(int width, HeaderAndFooterLayout layout) {
+        updateSize(width, layout);
     }
 
     @Override

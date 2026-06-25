@@ -7,7 +7,7 @@ import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -188,7 +188,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         protected float hoveredTime;
 
         @Override
-        public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             boolean nameHovered = hovered && mouseY >= getY() && mouseY <= getY() + 36;
             if(nameHovered) {
                 if(option.description() != null && !option.description().getString().isBlank()) {
@@ -205,10 +205,10 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             }
             context.fill(getX(), getY(), getX() + getWidth(), getY() + getHeight(), ARGB.color((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
-            context.drawString(client.font, option.displayName().copy().withStyle(style -> style.withItalic(changed.getAsBoolean())), getX() + spacing, getY() + (getHeight() - client.font.lineHeight) / 2, 0xFFFFFFFF);
+            context.text(client.font, option.displayName().copy().withStyle(style -> style.withItalic(changed.getAsBoolean())), getX() + spacing, getY() + (getHeight() - client.font.lineHeight) / 2, 0xFFFFFFFF);
             widget.setX(getX() + getWidth() - spacing - widget.getWidth());
             widget.setY(getY() + (getHeight() - widget.getHeight()) / 2);
-            widget.render(context, mouseX, mouseY, deltaTicks);
+            widget.extractRenderState(context, mouseX, mouseY, deltaTicks);
         }
 
         @Override
@@ -251,7 +251,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         protected float hoveredTime;
 
         @Override
-        public void renderContent(GuiGraphics context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             boolean nameHovered = hovered && mouseY >= getY() && mouseY <= getY() + 36;
             if(nameHovered) {
                 if(categoryDesc != null) {
@@ -268,11 +268,11 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             }
             context.fill(getX(), getY(), getX() + getWidth(), getY() + 36, ARGB.color((int) (hoveredTime * 0.2 * 255), 65, 65, 65));
             final int spacing = 8;
-            context.drawString(client.font, categoryName.copy().withStyle(ChatFormatting.YELLOW), getX() + spacing, getY() + (36 - client.font.lineHeight) / 2, 0xFFFFFFFF);
+            context.text(client.font, categoryName.copy().withStyle(ChatFormatting.YELLOW), getX() + spacing, getY() + (36 - client.font.lineHeight) / 2, 0xFFFFFFFF);
 
             if(showing) {
                 for (AbstractEntry<?> entry : this.entries) {
-                    entry.renderContent(context, mouseX, mouseY, hovered, deltaTicks);
+                    entry.extractContent(context, mouseX, mouseY, hovered, deltaTicks);
                 }
             }
         }

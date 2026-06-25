@@ -38,13 +38,13 @@ final class BuiltinWidgets {
 
     static AbstractWidget createIntWidget(ConfigAccess config, ConfigOption<Integer> option) {
         int space = getSpaceForIntOption(option);
-        EditBox widget = createNumberWidget(config, option, Mth.clamp(space * 10, 20, 100), String::valueOf, Integer::parseInt, Math::min, Math::max, false);
+        OldEditBox widget = createNumberWidget(config, option, Mth.clamp(space * 10, 20, 100), String::valueOf, Integer::parseInt, Math::min, Math::max, false);
         widget.setMaxLength(space);
         return widget;
     }
 
     static AbstractWidget createLongWidget(ConfigAccess config, ConfigOption<Long> option) {
-        EditBox widget = createNumberWidget(config, option, 100, String::valueOf, Long::parseLong, Math::min, Math::max, false);
+        OldEditBox widget = createNumberWidget(config, option, 100, String::valueOf, Long::parseLong, Math::min, Math::max, false);
         widget.setMaxLength(LONG_MAX_DIGITS + 1);
         return widget;
     }
@@ -57,7 +57,7 @@ final class BuiltinWidgets {
     });
 
     static AbstractWidget createDoubleWidget(ConfigAccess config, ConfigOption<Double> option) {
-        EditBox widget = createNumberWidget(config, option, 100, FORMAT::format, Double::parseDouble, Math::min, Math::max, true);
+        OldEditBox widget = createNumberWidget(config, option, 100, FORMAT::format, Double::parseDouble, Math::min, Math::max, true);
         widget.setMaxLength(64);
         return widget;
     }
@@ -94,10 +94,10 @@ final class BuiltinWidgets {
      * @return A TextFieldWidget that represents the given option.
      * @param <N> The type of Number of the config option.
      */
-    private static <N extends Number> EditBox createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
-        EditBox widget = new EditBox(Minecraft.getInstance().font, 0, 0, widgetWidth, 20, Component.empty());
+    private static <N extends Number> OldEditBox createNumberWidget(ConfigAccess config, ConfigOption<N> option, int widgetWidth, Function<N, String> toString, FailableFunction<String, N, NumberFormatException> parser, BinaryOperator<N> minFunc, BinaryOperator<N> maxFunc, boolean acceptFloatingPoint) {
+        OldEditBox widget = new OldEditBox(Minecraft.getInstance().font, 0, 0, widgetWidth, 20, Component.empty());
         widget.setValue(config.get(option).map(toString).orElse(""));
-        widget.setFilter(s -> {
+        widget.setTextPredicate(s -> {
             if(s.isEmpty() || s.equals("-") || (acceptFloatingPoint && s.equals("."))) {
                 return true;
             }

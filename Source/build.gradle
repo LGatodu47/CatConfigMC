@@ -1,5 +1,5 @@
 plugins {
-    id 'net.fabricmc.fabric-loom-remap' version '1.15-SNAPSHOT'
+    id 'net.fabricmc.fabric-loom' version '1.15-SNAPSHOT'
     id 'maven-publish'
     id 'idea'
     id 'signing'
@@ -10,7 +10,6 @@ version version
 
 dependencies {
     minecraft "com.mojang:minecraft:${minecraft_version}"
-    mappings loom.officialMojangMappings()
     configurations.implementation.dependencies.stream()
             .filter(d -> d.group == "io.github.lgatodu47" && d.name == "catconfig")
     .forEach(d -> include d)

@@ -1,9 +1,9 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
 import io.github.lgatodu47.catconfig.ConfigSide;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -100,9 +100,9 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
     }
 
     @Override
-    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
-        super.render(context, mouseX, mouseY, delta);
-        context.drawCenteredString(font, title, this.width / 2, 8, 0xFFFFFF);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
+        context.centeredText(font, title, this.width / 2, 8, 0xFFFFFF);
     }
 
     @Override

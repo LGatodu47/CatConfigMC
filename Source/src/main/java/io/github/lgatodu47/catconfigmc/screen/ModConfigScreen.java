@@ -92,7 +92,7 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.parent);
+        this.minecraft.gui.setScreen(this.parent);
         if(this.parent instanceof ConfigListener screen) {
             screen.configUpdated();
         }

@@ -83,7 +83,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
             int x = startX + rowIndex * (btnWidth + spacing);
             int y = startY + columnIndex * (btnHeight + spacing);
-            addRenderableWidget(Button.builder(getNameForSide(entry.getKey()), button -> this.minecraft.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous)))
+            addRenderableWidget(Button.builder(getNameForSide(entry.getKey()), button -> minecraft.gui.setScreen(entry.getValue().create(isParentScreen() ? this : this.previous)))
                     .bounds(x, y, btnWidth, btnHeight)
                     .build());
 
@@ -107,7 +107,7 @@ public class ConfigSideSelectionScreen extends Screen implements ConfigListener 
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(this.previous);
+        this.minecraft.gui.setScreen(this.previous);
     }
 
     /**

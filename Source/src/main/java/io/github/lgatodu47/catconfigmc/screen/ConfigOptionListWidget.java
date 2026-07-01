@@ -1,6 +1,5 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
-import com.google.common.collect.Lists;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
@@ -18,6 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.function.BooleanSupplier;
@@ -66,7 +66,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected void sort(Comparator<E> comparator) {
+    protected void sort(@NonNull Comparator<E> comparator) {
         super.sort(comparator);
         recalculateAllChildrenPositions();
     }
@@ -102,7 +102,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
     }
 
     @Override
-    protected void removeEntry(E entry) {
+    protected void removeEntry(@NonNull E entry) {
         super.removeEntry(entry);
         recalculateAllChildrenPositions();
     }
@@ -153,11 +153,75 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         finalEntries.stream().filter(Objects::nonNull).forEach(abstractEntry -> this.addEntry((E) abstractEntry));
     }
 
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        setFocused(null); // added this line: if we click somewhere where there is nothing, we still want to unfocus the currently focused widget right?
+        Optional<GuiEventListener> child = this.getChildAt(event.x(), event.y());
+        if (child.isEmpty()) {
+            return false;
+        }
+        GuiEventListener widget = child.get();
+        if (widget.mouseClicked(event, doubleClick) && widget.shouldTakeFocusAfterInteraction()) {
+            this.setFocused(widget);
+            if (event.button() == 0) {
+                this.setDragging(true);
+            }
+        }
+        return true;
+    }
+
     public static abstract class AbstractEntry<E extends AbstractEntry<E>> extends Entry<E> {
         protected final Minecraft client;
+        private @Nullable GuiEventListener focused;
 
         protected AbstractEntry(Minecraft client) {
             this.client = client;
+        }
+
+        @Override
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+            setFocused(null); // added this line: if we click somewhere where there is nothing, we still want to unfocus the currently focused widget right?
+            Optional<GuiEventListener> child = this.getChildAt(event.x(), event.y());
+            if (child.isEmpty()) {
+                return false;
+            }
+            GuiEventListener widget = child.get();
+            if (widget.mouseClicked(event, doubleClick) && widget.shouldTakeFocusAfterInteraction()) {
+                this.setFocused(widget);
+                if (event.button() == 0) {
+                    this.setDragging(true);
+                }
+            }
+            return true;
+        }
+
+        // by default, it behaves like defined in AbstractSelectionList.Entry#setFocused, which has an empty body. This is not the expected behaviour.
+        @Override
+        public void setFocused(boolean focused) {
+            if(!focused) {
+                this.setFocused(null);
+            }
+        }
+
+        // implementation for this function is very ambiguous by default, but after some digging with the debugger I suspect it has an empty body (which is very strange), meaning I
+        // have to rewrite the implementation for this function.
+        @Override
+        public void setFocused(@Nullable GuiEventListener focused) {
+            if(focused == this.focused) {
+                return;
+            }
+            if (this.focused != null) {
+                this.focused.setFocused(false);
+            }
+            if (focused != null) {
+                focused.setFocused(true);
+            }
+            this.focused = focused;
+        }
+
+        @Override
+        public @Nullable GuiEventListener getFocused() {
+            return this.focused;
         }
 
         protected void onReposition() {
@@ -188,7 +252,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         protected float hoveredTime;
 
         @Override
-        public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             boolean nameHovered = hovered && mouseY >= getY() && mouseY <= getY() + 36;
             if(nameHovered) {
                 if(option.description() != null && !option.description().getString().isBlank()) {
@@ -212,13 +276,13 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         }
 
         @Override
-        public List<? extends NarratableEntry> narratables() {
-            return Lists.newArrayList(widget);
+        public @NonNull List<? extends NarratableEntry> narratables() {
+            return List.of(widget);
         }
 
         @Override
-        public List<? extends GuiEventListener> children() {
-            return Lists.newArrayList(widget);
+        public @NonNull List<? extends GuiEventListener> children() {
+            return List.of(widget);
         }
     }
 
@@ -251,7 +315,7 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         protected float hoveredTime;
 
         @Override
-        public void extractContent(GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
+        public void extractContent(@NonNull GuiGraphicsExtractor context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
             boolean nameHovered = hovered && mouseY >= getY() && mouseY <= getY() + 36;
             if(nameHovered) {
                 if(categoryDesc != null) {
@@ -297,17 +361,18 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
             if(click.y() <= getY() + 36) {
                 showing = !showing;
                 positionUpdater.run();
+                return true;
             }
             return super.mouseClicked(click, doubled);
         }
 
         @Override
-        public List<? extends GuiEventListener> children() {
+        public @NonNull List<? extends GuiEventListener> children() {
             return List.copyOf(this.entries);
         }
 
         @Override
-        public List<? extends NarratableEntry> narratables() {
+        public @NonNull List<? extends NarratableEntry> narratables() {
             return List.of();
         }
     }

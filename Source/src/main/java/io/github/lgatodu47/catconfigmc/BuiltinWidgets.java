@@ -12,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Util;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.function.FailableFunction;
+import org.jspecify.annotations.NonNull;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -28,10 +29,10 @@ final class BuiltinWidgets {
     private static final int LONG_MAX_DIGITS = Long.toString(Long.MAX_VALUE).length();
 
     static AbstractWidget createBoolWidget(ConfigAccess config, ConfigOption<Boolean> option) {
-        return new Button.Plain(0, 0, 100, 20, Component.empty(), button -> config.put(option, config.get(option).map(b -> !b).orElse(false)), Supplier::get) {
+        return new Button.Plain(0, 0, 100, 20, Component.empty(), _ -> config.put(option, config.get(option).map(b -> !b).orElse(false)), Supplier::get) {
             @Override
-            public net.minecraft.network.chat.Component getMessage() {
-                return config.get(option).map(Object::toString).map(net.minecraft.network.chat.Component::nullToEmpty).orElseGet(super::getMessage);
+            public @NonNull Component getMessage() {
+                return config.get(option).map(Object::toString).map(Component::nullToEmpty).orElseGet(super::getMessage);
             }
         };
     }
@@ -78,7 +79,7 @@ final class BuiltinWidgets {
         CycleButton.Builder<E> builder = CycleButton.builder(e -> Component.literal(e.toString().toUpperCase()), init);
         builder.withValues(enumClass.getEnumConstants());
         builder.displayOnlyValue();
-        return builder.create(0, 0, 100, 20, Component.empty(), (button, value) -> config.put(option, value));
+        return builder.create(0, 0, 100, 20, Component.empty(), (_, value) -> config.put(option, value));
     }
 
     /**

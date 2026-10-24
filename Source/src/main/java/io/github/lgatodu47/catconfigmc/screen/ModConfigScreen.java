@@ -1,17 +1,15 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.CatConfig;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOptionAccess;
-import net.minecraft.client.gl.ShaderProgramKeys;
+import net.minecraft.client.gl.RenderPipelines;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.render.*;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -79,13 +77,10 @@ public class ModConfigScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
-        renderBackgroundTexture(context, mouseX, mouseY, delta);
         list.render(context, mouseX, mouseY, delta);
         list.bottom().ifPresent(this::renderAboveList);
         context.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 8, 0xFFFFFF);
-        context.getMatrices().translate(0, 0, 2);
         children().stream().filter(Drawable.class::isInstance).map(Drawable.class::cast).forEachOrdered(drawable -> drawable.render(context, mouseX, mouseY, delta));
-        context.getMatrices().translate(0, 0, -2);
         list.getHoveredButtonDescription(mouseX, mouseY).ifPresent(desc -> context.drawTooltip(textRenderer, desc, mouseX, mouseY));
     }
 
@@ -95,15 +90,7 @@ public class ModConfigScreen extends Screen {
      * @param listBottom The bottom y position of the list.
      */
     protected void renderAboveList(int listBottom) {
-        Tessellator tessellator = Tessellator.getInstance();
-        RenderSystem.setShader(ShaderProgramKeys.POSITION_TEX_COLOR);
-        RenderSystem.setShaderColor(1, 1, 1, 1);
-
-        BufferBuilder builder = tessellator.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_TEXTURE_COLOR);
-        builder.vertex(0.0f, this.height, 1).texture(0.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255);
-        builder.vertex(this.width, this.height, 1).texture((float) this.width / 32.0f, (float) (listBottom - this.height) / 32.0f).color(64, 64, 64, 255);
-        builder.vertex(this.width, listBottom, 1).texture((float) this.width / 32.0f, 0).color(64, 64, 64, 255);
-        builder.vertex(0.0f, listBottom, 1).texture(0.0f, 0).color(64, 64, 64, 255);
+        // Since 1.21.6 the list widget clips its entries with a scissor, so there is nothing to cover anymore.
     }
 
     protected void saveAndClose() {
@@ -111,12 +98,18 @@ public class ModConfigScreen extends Screen {
         close();
     }
 
+    // Since 1.21.6 the background is rendered by Screen#renderWithTooltip before Screen#render, rendering it twice would crash (blur).
+    @Override
+    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
+        renderBackgroundTexture(context, mouseX, mouseY, delta);
+    }
+
     public void renderBackgroundTexture(DrawContext context, int mouseX, int mouseY, float delta) {
         if(backgroundTexture == null) {
-            renderBackground(context, mouseX, mouseY, delta);
+            super.renderBackground(context, mouseX, mouseY, delta);
             return;
         }
-        context.drawTexture(RenderLayer::getGuiTextured, this.backgroundTexture, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32, ColorHelper.fromFloats(0.25f, 0.25f, 0.25f, 1.0f));
+        context.drawTexture(RenderPipelines.GUI_TEXTURED, this.backgroundTexture, 0, 0, 0.0f, 0.0f, this.width, this.height, 32, 32, ColorHelper.fromFloats(0.25f, 0.25f, 0.25f, 1.0f));
     }
 
     @Override

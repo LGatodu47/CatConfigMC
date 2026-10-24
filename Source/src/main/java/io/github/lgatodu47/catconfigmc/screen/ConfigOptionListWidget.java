@@ -1,7 +1,6 @@
 package io.github.lgatodu47.catconfigmc.screen;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.lgatodu47.catconfig.ConfigAccess;
 import io.github.lgatodu47.catconfig.ConfigOption;
 import io.github.lgatodu47.catconfigmc.RenderedConfigOption;
@@ -111,7 +110,6 @@ public class ConfigOptionListWidget<E extends ConfigOptionListWidget.AbstractEnt
         }
 
         renderDecorations(context, mouseX, mouseY);
-        RenderSystem.disableBlend();
     }
 
     @Override
